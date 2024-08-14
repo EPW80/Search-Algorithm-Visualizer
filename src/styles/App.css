@@ -1,0 +1,99 @@
+/* Center the entire application content */
+.App {
+  text-align: center;
+}
+
+/* Header styles */
+.App-header {
+  background-color: #343a40; /* Darker color for the header */
+  padding: 5px 10px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Main title styling */
+h1 {
+  font-size: 2rem;
+  margin: 0;
+  padding-bottom: 5px;
+}
+
+/* Controls container */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Space between buttons */
+  margin-top: 10px;
+}
+
+/* Button styling */
+.btn {
+  background-color: #28a745; /* Green background */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.reset-btn {
+  background-color: #d63384; /* Pink background for Reset button */
+}
+
+.btn:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.reset-btn:hover {
+  background-color: #c82373; /* Darker pink on hover */
+}
+
+/* Dropdown styling */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background-color: #17a2b8; /* Blue background */
+}
+
+.dropdown-btn:hover {
+  background-color: #138496; /* Darker blue on hover */
+}
+
+/* Grid container styling */
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  margin-top: 20px; /* Space between header and grid */
+}
+
+/* Link styling, if you include links in the future */
+.App-link {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+/* Example of media query, in case you add responsive design later */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+}

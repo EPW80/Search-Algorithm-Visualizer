@@ -1,0 +1,41 @@
+.cell {
+  width: 25px;
+  height: 25px;
+  background-color: #ffffff; /* Default background color */
+  border: 1px solid #ddd; /* Light border for cells */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cell-start {
+  background-color: #28a745; /* Green for start node */
+  border: 2px solid #000; /* Dark border for emphasis */
+}
+
+.cell-end {
+  background-color: #dc3545; /* Red for target node */
+  border: 2px solid #000; /* Dark border for emphasis */
+}
+
+.cell-wall {
+  background-color: #343a40; /* Dark color for wall nodes */
+}
+
+.cell-weighted {
+  background-color: #ffc107; /* Yellow for weighted nodes */
+}
+
+.cell-path {
+  background-color: #007bff; /* Blue for path nodes */
+}
+
+.cell-visited {
+  background-color: #17a2b8; /* Light blue for visited nodes */
+}
+
+/* Optional: Add hover effect to indicate interactivity */
+.cell:hover {
+  background-color: #f8f9fa;
+}
