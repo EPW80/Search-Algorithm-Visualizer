@@ -1,46 +1,14 @@
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 25px); /* Creates columns automatically */
-    gap: 1px; /* Adds spacing between the cells */
-    margin: 0 auto;
-    background-color: #ffffff;
-    border: 2px solid #cccccc; /* Optional: outer border of the grid */
-    max-width: 100%; /* Ensure it doesn't overflow the container */
-  }
-  
-  .grid-row {
-    display: contents; /* Prevents grid-row from interfering with the grid layout */
-  }
-  
-  .cell {
-    width: 25px;
-    height: 25px;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .cell-start {
-    background-color: #28a745;
-  }
-  
-  .cell-end {
-    background-color: #dc3545;
-  }
-  
-  .cell-wall {
-    background-color: #343a40;
-  }
-  
-  .cell:hover {
-    background-color: #f8f9fa;
-  }
-   
-
-@media (max-width: 600px) {
-  /* Smaller grid for mobile screens */
-  .grid {
-    gap: 1px;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 25px); /* Creates columns automatically */
+  margin: 0 auto;
+  background-color: #ffffff;
+  border: 1px solid #87ceeb; /* Sky blue outer border of the grid */
+  max-width: 100%; /* Ensure it doesn't overflow the container */
 }
+
+.grid-row {
+  display: contents; /* Prevents grid-row from interfering with the grid layout */
+}
+
+

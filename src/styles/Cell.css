@@ -2,21 +2,21 @@
   width: 25px;
   height: 25px;
   background-color: #ffffff; /* Default background color */
-  border: 1px solid #ddd; /* Light border for cells */
+  border: 1px solid #87ceeb; /* Sky blue border for cells */
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: background-color 0.3s ease;
 }
 
+/* Specific cell types */
 .cell-start {
   background-color: #28a745; /* Green for start node */
-  border: 2px solid #000; /* Dark border for emphasis */
 }
 
 .cell-end {
   background-color: #dc3545; /* Red for target node */
-  border: 2px solid #000; /* Dark border for emphasis */
 }
 
 .cell-wall {

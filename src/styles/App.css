@@ -25,11 +25,11 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px; /* Space between buttons */
+  gap: 16px; /* Space between buttons */
   margin-top: 10px;
 }
 
-/* Button styling */
+/* General button styling */
 .btn {
   background-color: #28a745; /* Green background */
   color: white;
@@ -53,19 +53,6 @@ h1 {
   background-color: #c82373; /* Darker pink on hover */
 }
 
-/* Dropdown styling */
-.dropdown {
-  position: relative;
-}
-
-.dropdown-btn {
-  background-color: #17a2b8; /* Blue background */
-}
-
-.dropdown-btn:hover {
-  background-color: #138496; /* Darker blue on hover */
-}
-
 /* Grid container styling */
 main {
   display: flex;
@@ -81,7 +68,54 @@ main {
   text-decoration: none;
 }
 
-/* Example of media query, in case you add responsive design later */
+/* Legend styles */
+.legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; /* Optional: Wrap to a new line if needed */
+  gap: 15px; /* Space between legend items */
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  border: 1px solid #ccc;
+}
+
+/* Legend icon colors */
+.start-node {
+  background-color: #28a745;
+}
+.target-node {
+  background-color: #dc3545;
+}
+.weight-node {
+  background-color: black;
+}
+.path-node {
+  background-color: #ffc107;
+}
+.visited-node {
+  background-color: #17a2b8;
+}
+.unvisited-node {
+  background-color: white;
+  border: 1px solid #17a2b8;
+}
+.wall-node {
+  background-color: #343a40;
+}
+
+/* Responsive styling */
 @media (max-width: 600px) {
   h1 {
     font-size: 2rem;
