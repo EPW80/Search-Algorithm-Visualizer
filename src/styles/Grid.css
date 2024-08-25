@@ -1,6 +1,9 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 25px); /* Creates columns automatically */
+  grid-template-columns: repeat(
+    auto-fill,
+    25px
+  ); /* Creates columns automatically */
   margin: 0 auto;
   background-color: #ffffff;
   border: 1px solid #87ceeb; /* Sky blue outer border of the grid */
@@ -10,5 +13,3 @@
 .grid-row {
   display: contents; /* Prevents grid-row from interfering with the grid layout */
 }
-
-
