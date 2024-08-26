@@ -33,12 +33,7 @@ export var searchHelpers = {
         for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
             var node = nodes_1[_i];
             var x = node[0], y = node[1];
-            if (isPath) {
-                newGrid[x][y] = "path";
-            }
-            else {
-                newGrid[x][y] = "visited";
-            }
+            newGrid[x][y] = isPath ? "path" : "visited";
         }
         return newGrid;
     },

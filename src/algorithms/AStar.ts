@@ -14,7 +14,7 @@ export function AStar(
   const gScore: { [key: string]: number } = {};
   const fScore: { [key: string]: number } = {};
 
-  const open = new PriorityQueue();
+  const open = new PriorityQueue<[number, number]>();
   gScore[start.toString()] = 0;
   fScore[start.toString()] = searchHelpers.manhattanDistance(start, end);
   open.push(start, fScore[start.toString()]);
@@ -59,7 +59,7 @@ export function AStar(
       const neighborCell = grid[neighbor[0]][neighbor[1]];
       const neighborKey = neighbor.toString();
       const currentNodeKey = currentNode.toString();
-      let potentialScore =
+      const potentialScore =
         gScore[currentNodeKey] + (neighborCell.isWeight ? 10 : 1);
 
       if (potentialScore < gScore[neighborKey]) {
@@ -78,8 +78,11 @@ export function AStar(
     }
   }
 
-  const newGrid = searchHelpers.updateGrid(grid, visited, false);
-  let gridWithPath = searchHelpers.updateGrid(newGrid, pathArray || [], true);
+  const finalGrid = searchHelpers.updateGrid(
+    searchHelpers.updateGrid(grid, visited, false),
+    pathArray || [],
+    true
+  );
 
-  return { newGrid, gridWithPath, visited, pathArray };
+  return { newGrid: finalGrid, gridWithPath: finalGrid, visited, pathArray };
 }

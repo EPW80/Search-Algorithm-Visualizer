@@ -24,7 +24,10 @@ export var GridProvider = function (_a) {
             return newGrid;
         });
     };
-    return (_jsx(GridContext.Provider, __assign({ value: { grid: grid, setGrid: setGrid, updateCellState: updateCellState } }, { children: children })));
+    var resetGrid = function () {
+        setGrid(createInitialGrid());
+    };
+    return (_jsx(GridContext.Provider, __assign({ value: { grid: grid, setGrid: setGrid, updateCellState: updateCellState, resetGrid: resetGrid } }, { children: children })));
 };
 // Custom hook for consuming the grid context
 export var useGrid = function () {

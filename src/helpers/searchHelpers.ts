@@ -11,7 +11,7 @@ export const searchHelpers = {
     grid: any[][],
     rows: number,
     cols: number
-  ) => {
+  ): [number, number][] => {
     const [row, col] = node;
     const neighbours: [number, number][] = [];
 
@@ -23,7 +23,7 @@ export const searchHelpers = {
     return neighbours;
   },
 
-  arraysMatch: (arr1: any[], arr2: any[]) => {
+  arraysMatch: (arr1: number[], arr2: number[]): boolean => {
     return (
       arr1.length === arr2.length &&
       arr1.every((value, index) => value === arr2[index])
@@ -33,7 +33,7 @@ export const searchHelpers = {
   getPath: (
     path: { [key: string]: [number, number] | null },
     end: [number, number]
-  ) => {
+  ): [number, number][] => {
     const pathArray: [number, number][] = [];
     let currentNode = end;
 
@@ -45,16 +45,16 @@ export const searchHelpers = {
     return pathArray.reverse();
   },
 
-  updateGrid: (grid: any[][], nodes: [number, number][], isPath: boolean) => {
+  updateGrid: (
+    grid: any[][],
+    nodes: [number, number][],
+    isPath: boolean
+  ): any[][] => {
     const newGrid = grid.map((row) => row.slice());
 
     for (const node of nodes) {
       const [x, y] = node;
-      if (isPath) {
-        newGrid[x][y] = "path";
-      } else {
-        newGrid[x][y] = "visited";
-      }
+      newGrid[x][y] = isPath ? "path" : "visited";
     }
 
     return newGrid;

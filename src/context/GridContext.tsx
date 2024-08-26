@@ -14,6 +14,7 @@ interface GridContextState {
   grid: CellState[][];
   setGrid: React.Dispatch<React.SetStateAction<CellState[][]>>;
   updateCellState: (row: number, col: number, newState: Partial<CellState>) => void;
+  resetGrid: () => void;
 }
 
 interface GridProviderProps {
@@ -35,8 +36,12 @@ export const GridProvider: React.FC<GridProviderProps> = ({ children }) => {
     });
   };
 
+  const resetGrid = () => {
+    setGrid(createInitialGrid());
+  };
+
   return (
-    <GridContext.Provider value={{ grid, setGrid, updateCellState }}>
+    <GridContext.Provider value={{ grid, setGrid, updateCellState, resetGrid }}>
       {children}
     </GridContext.Provider>
   );

@@ -63,7 +63,6 @@ export function AStar(grid, start, end) {
         if (state_1 === "break")
             break;
     }
-    var newGrid = searchHelpers.updateGrid(grid, visited, false);
-    var gridWithPath = searchHelpers.updateGrid(newGrid, pathArray || [], true);
-    return { newGrid: newGrid, gridWithPath: gridWithPath, visited: visited, pathArray: pathArray };
+    var finalGrid = searchHelpers.updateGrid(searchHelpers.updateGrid(grid, visited, false), pathArray || [], true);
+    return { newGrid: finalGrid, gridWithPath: finalGrid, visited: visited, pathArray: pathArray };
 }
