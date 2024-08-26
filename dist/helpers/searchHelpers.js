@@ -16,7 +16,8 @@ export var searchHelpers = {
         return neighbours;
     },
     arraysMatch: function (arr1, arr2) {
-        return arr1.length === arr2.length && arr1.every(function (value, index) { return value === arr2[index]; });
+        return (arr1.length === arr2.length &&
+            arr1.every(function (value, index) { return value === arr2[index]; }));
     },
     getPath: function (path, end) {
         var pathArray = [];

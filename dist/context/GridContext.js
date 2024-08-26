@@ -54,6 +54,7 @@ var createCell = function (col, row) {
         isStart: row === 10 && col === 5,
         isEnd: row === 10 && col === 45,
         isWall: false,
+        isWeight: false,
     };
 };
 var getGridDimensions = function () {

@@ -1,12 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 // Define the shape of the CellState and GridContextState
-interface CellState {
+export interface CellState {
   row: number;
   col: number;
   isStart: boolean;
   isEnd: boolean;
   isWall: boolean;
+  isWeight: boolean;
 }
 
 interface GridContextState {
@@ -71,6 +72,7 @@ const createCell = (col: number, row: number): CellState => {
     isStart: row === 10 && col === 5,
     isEnd: row === 10 && col === 45,
     isWall: false,
+    isWeight: false,
   };
 };
 

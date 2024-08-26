@@ -1,8 +1,9 @@
 import { searchHelpers } from "../helpers/searchHelpers";
 import PriorityQueue from "../helpers/PriorityQueue";
+import { CellState } from "../context/GridContext";
 
 export function AStar(
-  grid: any[][],
+  grid: CellState[][],
   start: [number, number],
   end: [number, number]
 ) {
@@ -20,13 +21,15 @@ export function AStar(
 
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[0].length; j++) {
-      const thisCell = [i, j];
-      if (!grid[i][j].includes("wall")) {
-        if (!grid[i][j].includes("start")) {
-          gScore[thisCell.toString()] = Infinity;
-          fScore[thisCell.toString()] = Infinity;
+      const thisCell = grid[i][j];
+      const thisCellKey = [i, j].toString();
+
+      if (!thisCell.isWall) {
+        if (!thisCell.isStart) {
+          gScore[thisCellKey] = Infinity;
+          fScore[thisCellKey] = Infinity;
         }
-        path[thisCell.toString()] = null;
+        path[thisCellKey] = null;
       }
     }
   }
@@ -53,11 +56,11 @@ export function AStar(
     );
 
     for (const neighbor of neighbors) {
+      const neighborCell = grid[neighbor[0]][neighbor[1]];
       const neighborKey = neighbor.toString();
       const currentNodeKey = currentNode.toString();
       let potentialScore =
-        gScore[currentNodeKey] +
-        (grid[neighbor[0]][neighbor[1]].includes("weight") ? 10 : 1);
+        gScore[currentNodeKey] + (neighborCell.isWeight ? 10 : 1);
 
       if (potentialScore < gScore[neighborKey]) {
         path[neighborKey] = currentNode;

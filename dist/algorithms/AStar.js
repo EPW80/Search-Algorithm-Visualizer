@@ -12,13 +12,14 @@ export function AStar(grid, start, end) {
     open.push(start, fScore[start.toString()]);
     for (var i = 0; i < grid.length; i++) {
         for (var j = 0; j < grid[0].length; j++) {
-            var thisCell = [i, j];
-            if (!grid[i][j].includes("wall")) {
-                if (!grid[i][j].includes("start")) {
-                    gScore[thisCell.toString()] = Infinity;
-                    fScore[thisCell.toString()] = Infinity;
+            var thisCell = grid[i][j];
+            var thisCellKey = [i, j].toString();
+            if (!thisCell.isWall) {
+                if (!thisCell.isStart) {
+                    gScore[thisCellKey] = Infinity;
+                    fScore[thisCellKey] = Infinity;
                 }
-                path[thisCell.toString()] = null;
+                path[thisCellKey] = null;
             }
         }
     }
@@ -36,14 +37,18 @@ export function AStar(grid, start, end) {
         }
         var neighbors = searchHelpers.getNeighbours(currentNode, grid, grid.length, grid[0].length);
         var _loop_2 = function (neighbor) {
+            var neighborCell = grid[neighbor[0]][neighbor[1]];
             var neighborKey = neighbor.toString();
             var currentNodeKey = currentNode.toString();
-            var potentialScore = gScore[currentNodeKey] + (grid[neighbor[0]][neighbor[1]].includes("weight") ? 10 : 1);
+            var potentialScore = gScore[currentNodeKey] + (neighborCell.isWeight ? 10 : 1);
             if (potentialScore < gScore[neighborKey]) {
                 path[neighborKey] = currentNode;
                 gScore[neighborKey] = potentialScore;
-                fScore[neighborKey] = potentialScore + searchHelpers.manhattanDistance(neighbor, end);
-                if (!open.hasElement(function (element) { return searchHelpers.arraysMatch(element.value, neighbor); })) {
+                fScore[neighborKey] =
+                    potentialScore + searchHelpers.manhattanDistance(neighbor, end);
+                if (!open.hasElement(function (element) {
+                    return searchHelpers.arraysMatch(element.value, neighbor);
+                })) {
                     open.push(neighbor, fScore[neighborKey]);
                 }
             }
