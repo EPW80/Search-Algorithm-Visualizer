@@ -59,4 +59,10 @@ export const searchHelpers = {
 
     return newGrid;
   },
+
+  hasVertex: (array: [number, number], array2D: [number, number][]) => {
+    return array2D.some((vertex) => 
+      vertex[0] === array[0] && vertex[1] === array[1]
+    );
+  },
 };

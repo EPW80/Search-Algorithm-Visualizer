@@ -4,6 +4,7 @@ import Grid from '../components/Grid';
 import '../styles/App.css';
 import '../styles/Dropdown.css'; // Import dropdown styles
 import { AStar } from '../algorithms/AStar'; // Import the AStar algorithm
+import { BFS } from '../algorithms/BFS';
 
 const App: React.FC = () => {
   return (
@@ -32,7 +33,8 @@ const AppContent: React.FC = () => {
 
       switch (selectedAlgorithm) {
         case 'BFS':
-          resultGrid = grid; // Implement BFS and set result grid
+          const bfsResult = BFS(grid, startNode, endNode);
+          resultGrid = bfsResult.gridWithPath;
           break;
         case 'DFS':
           resultGrid = grid; // Implement DFS and set result grid
