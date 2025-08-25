@@ -69,6 +69,8 @@ const Grid: React.FC = () => {
               isStart={cell.isStart}
               isEnd={cell.isEnd}
               isWall={cell.isWall}
+              isPath={cell.isPath}
+              isVisited={cell.isVisited}
               onMouseDown={() => handleMouseDown(cell.row, cell.col)}
               onMouseEnter={() => handleMouseEnter(cell.row, cell.col)}
               onMouseUp={handleMouseUp}

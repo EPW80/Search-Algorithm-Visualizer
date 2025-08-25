@@ -8,6 +8,8 @@ export interface CellState {
   isEnd: boolean;
   isWall: boolean;
   isWeight: boolean;
+  isPath: boolean;
+  isVisited: boolean;
 }
 
 interface GridContextState {
@@ -78,6 +80,8 @@ const createCell = (col: number, row: number): CellState => {
     isEnd: row === 10 && col === 45,
     isWall: false,
     isWeight: false,
+    isPath: false,
+    isVisited: false,
   };
 };
 

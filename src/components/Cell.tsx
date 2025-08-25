@@ -7,6 +7,8 @@ interface CellProps {
   isStart: boolean;
   isEnd: boolean;
   isWall: boolean;
+  isPath: boolean;
+  isVisited: boolean;
   onMouseDown: (row: number, col: number) => void;
   onMouseEnter: (row: number, col: number) => void;
   onMouseUp: () => void;
@@ -18,6 +20,8 @@ const Cell: React.FC<CellProps> = ({
   isStart,
   isEnd,
   isWall,
+  isPath,
+  isVisited,
   onMouseDown,
   onMouseEnter,
   onMouseUp,
@@ -28,7 +32,11 @@ const Cell: React.FC<CellProps> = ({
       ? 'cell-end'
       : isWall
         ? 'cell-wall'
-        : '';
+        : isPath
+          ? 'cell-path'
+          : isVisited
+            ? 'cell-visited'
+            : '';
 
   return (
     <div
@@ -42,6 +50,3 @@ const Cell: React.FC<CellProps> = ({
 };
 
 export default Cell;
-
-// If there is no import/export, you can add an empty export statement like this:
-export { };

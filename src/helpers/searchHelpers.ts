@@ -1,3 +1,5 @@
+import { CellState } from "../context/GridContext";
+
 export const searchHelpers = {
   manhattanDistance: (
     start: [number, number],
@@ -8,7 +10,7 @@ export const searchHelpers = {
 
   getNeighbours: (
     node: [number, number],
-    grid: any[][],
+    grid: CellState[][],
     rows: number,
     cols: number
   ): [number, number][] => {
@@ -46,15 +48,18 @@ export const searchHelpers = {
   },
 
   updateGrid: (
-    grid: any[][],
+    grid: CellState[][],
     nodes: [number, number][],
     isPath: boolean
-  ): any[][] => {
-    const newGrid = grid.map((row) => row.slice());
+  ): CellState[][] => {
+    const newGrid = grid.map(row => row.map(cell => ({...cell})));
 
-    for (const node of nodes) {
-      const [x, y] = node;
-      newGrid[x][y] = isPath ? "path" : "visited";
+    for (const [x, y] of nodes) {
+      if (isPath) {
+        newGrid[x][y].isPath = true;
+      } else {
+        newGrid[x][y].isVisited = true;
+      }
     }
 
     return newGrid;
