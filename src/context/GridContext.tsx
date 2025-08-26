@@ -32,8 +32,20 @@ export const GridProvider: React.FC<GridProviderProps> = ({ children }) => {
 
   const updateCellState = (row: number, col: number, newState: Partial<CellState>) => {
     setGrid(prevGrid => {
-      const newGrid = prevGrid.slice();
-      newGrid[row][col] = { ...newGrid[row][col], ...newState };
+      // Create a deep copy of the grid to ensure full immutability
+      const newGrid = prevGrid.map((gridRow, rowIndex) => {
+        if (rowIndex === row) {
+          // For the target row, create a new array with the updated cell
+          return gridRow.map((cell, colIndex) => {
+            if (colIndex === col) {
+              // Create a new cell object with the updated state
+              return { ...cell, ...newState };
+            }
+            return cell; // Return existing cell unchanged
+          });
+        }
+        return gridRow; // Return existing row unchanged
+      });
       return newGrid;
     });
   };
