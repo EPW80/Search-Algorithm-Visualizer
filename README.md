@@ -4,10 +4,18 @@ The Search Algorithm Visualizer is a web-based tool designed to help users under
 
 ## Features
 
-- Interactive Grid: Users can click and drag on the grid to create walls, place start and end nodes, and define paths.
-- Algorithm Selection: Choose from a variety of algorithms to visualize their pathfinding process.
-- Responsive Design: The application is responsive and adjusts for different screen sizes.
-- Control Options: Includes options to reset the grid, adjust the speed of the visualization, and select different mazes and patterns.
+- **Interactive Grid**: Users can click and drag on the grid to create walls, place start and end nodes, and define paths.
+- **Algorithm Selection**: Choose from a variety of algorithms to visualize their pathfinding process:
+  - Breadth-First Search (BFS)
+  - Depth-First Search (DFS) 
+  - Dijkstra's Algorithm
+  - A* Search
+  - Greedy Best-First Search (GBFS)
+- **Animation Controls**: Adjustable visualization speed (Slow, Normal, Fast, Instant)
+- **Responsive Design**: The application is responsive and adjusts for different screen sizes.
+- **Accessibility**: Full keyboard navigation support and screen reader compatibility.
+- **Visual Feedback**: Smooth animations and visual cues for algorithm execution.
+- **Control Options**: Includes options to reset the grid, adjust the speed of the visualization, and select different algorithms.
 
 ## Technologies Used
 

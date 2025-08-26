@@ -52,7 +52,7 @@ export const searchHelpers = {
     nodes: [number, number][],
     isPath: boolean
   ): CellState[][] => {
-    const newGrid = grid.map(row => row.map(cell => ({...cell})));
+    const newGrid = grid.map((row) => row.map((cell) => ({ ...cell })));
 
     for (const [x, y] of nodes) {
       if (isPath) {
@@ -66,8 +66,8 @@ export const searchHelpers = {
   },
 
   hasVertex: (array: [number, number], array2D: [number, number][]) => {
-    return array2D.some((vertex) => 
-      vertex[0] === array[0] && vertex[1] === array[1]
+    return array2D.some(
+      (vertex) => vertex[0] === array[0] && vertex[1] === array[1]
     );
   },
 };

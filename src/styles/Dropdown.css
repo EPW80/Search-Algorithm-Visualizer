@@ -21,15 +21,30 @@
   z-index: 1;
 }
 
-.dropdown-content a {
+.dropdown-content a,
+.dropdown-content button {
   color: black;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
 }
 
-.dropdown-content a:hover {
+.dropdown-content a:hover,
+.dropdown-content button:hover {
   background-color: #f1f1f1;
+}
+
+.dropdown-content button:focus {
+  background-color: #e3f2fd;
+  outline: 2px solid #2196f3;
+  outline-offset: -2px;
 }
 
 .dropdown:hover .dropdown-content {
