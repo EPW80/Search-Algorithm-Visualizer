@@ -1,7 +1,7 @@
-import React, { useState, useCallback, memo } from 'react';
-import Cell from './Cell';
-import { useGrid, CellState } from '../context/GridContext';
+import React, { memo, useCallback, useState } from 'react';
+import { CellState, useGrid } from '../context/GridContext';
 import '../styles/Grid.css';
+import Cell from './Cell';
 
 const Grid: React.FC = () => {
   const { grid, updateCellState } = useGrid();
@@ -10,16 +10,26 @@ const Grid: React.FC = () => {
 
   const findStartOrEndNode = useCallback((type: 'start' | 'end'): [number, number] => {
     for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        if (type === 'start' && grid[row][col].isStart) return [row, col];
-        if (type === 'end' && grid[row][col].isEnd) return [row, col];
+      const gridRow = grid[row];
+      if (!gridRow) continue;
+
+      for (let col = 0; col < gridRow.length; col++) {
+        const cell = gridRow[col];
+        if (!cell) continue;
+
+        if (type === 'start' && cell.isStart) return [row, col];
+        if (type === 'end' && cell.isEnd) return [row, col];
       }
     }
     return [-1, -1]; // If no node is found, return an invalid position.
   }, [grid]);
 
   const handleMouseDown = useCallback((row: number, col: number) => {
-    const cell = grid[row][col];
+    const gridRow = grid[row];
+    if (!gridRow) return;
+
+    const cell = gridRow[col];
+    if (!cell) return;
 
     if (cell.isStart) {
       setDraggedNodeType('start');
@@ -33,7 +43,12 @@ const Grid: React.FC = () => {
 
   const handleMouseEnter = useCallback((row: number, col: number) => {
     if (!mouseIsPressed) return;
-    const cell = grid[row][col];
+
+    const gridRow = grid[row];
+    if (!gridRow) return;
+
+    const cell = gridRow[col];
+    if (!cell) return;
 
     if (draggedNodeType === 'start') {
       const [startRow, startCol] = findStartOrEndNode('start');
@@ -82,10 +97,10 @@ interface GridRowProps {
   onMouseUp: () => void;
 }
 
-const GridRow = memo<GridRowProps>(({ row, rowIndex, onMouseDown, onMouseEnter, onMouseUp }) => {
+const GridRow = memo<GridRowProps>(({ row, rowIndex: _rowIndex, onMouseDown, onMouseEnter, onMouseUp }) => {
   return (
     <div className="grid-row">
-      {row.map((cell, cellIdx) => (
+      {row.map((cell, _cellIdx) => (
         <Cell
           key={`${cell.row}-${cell.col}`} // More stable key
           row={cell.row}
@@ -109,6 +124,9 @@ const GridRow = memo<GridRowProps>(({ row, rowIndex, onMouseDown, onMouseEnter, 
   for (let i = 0; i < prevProps.row.length; i++) {
     const prevCell = prevProps.row[i];
     const nextCell = nextProps.row[i];
+
+    // Check if either cell is undefined
+    if (!prevCell || !nextCell) return false;
 
     if (
       prevCell.isStart !== nextCell.isStart ||

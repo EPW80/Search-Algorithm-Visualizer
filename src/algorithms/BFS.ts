@@ -1,65 +1,61 @@
-import { searchHelpers } from "../helpers/searchHelpers";
+import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
 import { CellState } from "../context/GridContext";
 
+export class BFSAlgorithm extends BaseAlgorithm {
+  execute(
+    grid: CellState[][],
+    start: [number, number],
+    end: [number, number]
+  ): AlgorithmResult {
+    this.resetState();
+    this.validateInputs(grid, start, end);
+
+    const queue: [number, number][] = [];
+    const visited: [number, number][] = [];
+    const pathMap = new Map<string, [number, number]>();
+    let pathArray: [number, number][] | null = null;
+
+    queue.push(start);
+    visited.push(start);
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current) break;
+
+      // Check if target is reached
+      if (this.isTargetReached(current, end)) {
+        pathArray = this.reconstructPath(pathMap, end, start);
+        break;
+      }
+
+      // Explore neighbors
+      const neighbors = this.getValidNeighbors(current, grid);
+      for (const neighbor of neighbors) {
+        const [row, col] = neighbor;
+        const neighborCell = grid[row]?.[col];
+
+        if (!neighborCell || neighborCell.isWall) {
+          continue;
+        }
+
+        if (!this.isVisited(neighbor, visited)) {
+          visited.push(neighbor);
+          pathMap.set(this.createKey(neighbor), current);
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    return this.createResult(grid, visited, pathArray);
+  }
+}
+
+// Legacy function wrapper for backward compatibility
 export function BFS(
   grid: CellState[][],
   start: [number, number],
   end: [number, number]
-) {
-  const { visited, pathArray } = bfs(grid, start, end);
-
-  let newGrid = searchHelpers.updateGrid(grid, visited, false);
-  let gridWithPath = newGrid.map((arr) => arr.slice());
-
-  if (pathArray !== null) {
-    gridWithPath = searchHelpers.updateGrid(gridWithPath, pathArray, true);
-  }
-
-  return { newGrid, gridWithPath, visited, pathArray };
-}
-
-function bfs(
-  grid: CellState[][],
-  vertex: [number, number],
-  end: [number, number]
-) {
-  let stack: [number, number][] = [];
-  let visited: [number, number][] = [];
-  let path: { [key: string]: [number, number] } = {};
-  let pathArray: [number, number][] = [];
-
-  stack.unshift(vertex);
-  visited.push(vertex);
-
-  while (stack.length > 0) {
-    let cur = stack.pop();
-    if (!cur) break;
-
-    // Target found
-    if (searchHelpers.arraysMatch(cur, end)) {
-      let tempCur = end;
-      while (!searchHelpers.arraysMatch(tempCur, vertex)) {
-        pathArray.unshift(tempCur);
-        tempCur = path[tempCur.toString()];
-      }
-      return { visited, pathArray };
-    }
-
-    const neighbors = searchHelpers.getNeighbours(
-      cur,
-      grid,
-      grid.length,
-      grid[0].length
-    );
-    if (neighbors) {
-      for (let neighbor of neighbors) {
-        if (!searchHelpers.hasVertex(neighbor, visited)) {
-          visited.push(neighbor);
-          path[neighbor.toString()] = cur;
-          stack.unshift(neighbor);
-        }
-      }
-    }
-  }
-  return { visited, pathArray };
+): AlgorithmResult {
+  const algorithm = new BFSAlgorithm();
+  return algorithm.execute(grid, start, end);
 }

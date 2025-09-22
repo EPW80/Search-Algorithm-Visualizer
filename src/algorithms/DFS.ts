@@ -1,77 +1,64 @@
-import { searchHelpers } from "../helpers/searchHelpers";
+import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
 import { CellState } from "../context/GridContext";
 
-export function DFS(
-  grid: CellState[][],
-  start: [number, number],
-  end: [number, number]
-) {
-  const { visited, pathArray } = dfs(grid, start, end);
+export class DFSAlgorithm extends BaseAlgorithm {
+  execute(
+    grid: CellState[][],
+    start: [number, number],
+    end: [number, number]
+  ): AlgorithmResult {
+    this.resetState();
+    this.validateInputs(grid, start, end);
 
-  let newGrid = searchHelpers.updateGrid(grid, visited, false);
-  let gridWithPath = newGrid.map((arr) => arr.slice());
+    const stack: [number, number][] = [];
+    const visited: [number, number][] = [];
+    const pathMap = new Map<string, [number, number]>();
+    let pathArray: [number, number][] | null = null;
 
-  if (pathArray !== null) {
-    gridWithPath = searchHelpers.updateGrid(gridWithPath, pathArray, true);
-  }
+    stack.push(start);
 
-  return { newGrid, gridWithPath, visited, pathArray };
-}
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current) break;
 
-function dfs(
-  grid: CellState[][],
-  vertex: [number, number],
-  end: [number, number]
-) {
-  let stack: [number, number][] = [];
-  let visited: [number, number][] = [];
-  let path: { [key: string]: [number, number] } = {};
-  let pathArray: [number, number][] = [];
+      // Skip if already visited
+      if (this.isVisited(current, visited)) continue;
 
-  stack.push(vertex);
+      visited.push(current);
 
-  while (stack.length > 0) {
-    let cur = stack.pop();
-    if (!cur) break;
-
-    // Skip if already visited
-    if (searchHelpers.hasVertex(cur, visited)) continue;
-
-    visited.push(cur);
-
-    // Target found
-    if (searchHelpers.arraysMatch(cur, end)) {
-      let tempCur = end;
-      while (!searchHelpers.arraysMatch(tempCur, vertex)) {
-        pathArray.unshift(tempCur);
-        tempCur = path[tempCur.toString()];
+      // Check if target is reached
+      if (this.isTargetReached(current, end)) {
+        pathArray = this.reconstructPath(pathMap, end, start);
+        break;
       }
-      return { visited, pathArray };
-    }
 
-    const neighbors = searchHelpers.getNeighbours(
-      cur,
-      grid,
-      grid.length,
-      grid[0].length
-    );
-
-    if (neighbors) {
-      for (let neighbor of neighbors) {
+      // Explore neighbors
+      const neighbors = this.getValidNeighbors(current, grid);
+      for (const neighbor of neighbors) {
         const [row, col] = neighbor;
-        const neighborCell = grid[row][col];
+        const neighborCell = grid[row]?.[col];
 
-        // Skip walls and already visited nodes
-        if (
-          !neighborCell.isWall &&
-          !searchHelpers.hasVertex(neighbor, visited)
-        ) {
-          path[neighbor.toString()] = cur;
+        if (!neighborCell || neighborCell.isWall) {
+          continue;
+        }
+
+        if (!this.isVisited(neighbor, visited)) {
+          pathMap.set(this.createKey(neighbor), current);
           stack.push(neighbor);
         }
       }
     }
-  }
 
-  return { visited, pathArray };
+    return this.createResult(grid, visited, pathArray);
+  }
+}
+
+// Legacy function wrapper for backward compatibility
+export function DFS(
+  grid: CellState[][],
+  start: [number, number],
+  end: [number, number]
+): AlgorithmResult {
+  const algorithm = new DFSAlgorithm();
+  return algorithm.execute(grid, start, end);
 }

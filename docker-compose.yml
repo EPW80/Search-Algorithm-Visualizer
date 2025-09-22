@@ -1,9 +1,11 @@
-version: '3'
+version: '3.8'
 services:
   web:
     build: .
     ports:
-      - "9000:9000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "80:80"
+    restart: unless-stopped
+    # Remove volumes since we're using nginx to serve static files
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules

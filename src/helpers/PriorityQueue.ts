@@ -39,8 +39,8 @@ export default class PriorityQueue<T> {
     const element = this.elements[idx];
 
     while (idx > 0) {
-      let parentIdx = Math.floor((idx - 1) / 2);
-      let parent = this.elements[parentIdx];
+      const parentIdx = Math.floor((idx - 1) / 2);
+      const parent = this.elements[parentIdx];
 
       if (element.priority >= parent.priority) break;
 
@@ -56,19 +56,19 @@ export default class PriorityQueue<T> {
     const element = this.elements[0];
 
     while (true) {
-      let leftChildIdx = 2 * idx + 1;
-      let rightChildIdx = 2 * idx + 2;
+      const leftChildIdx = 2 * idx + 1;
+      const rightChildIdx = 2 * idx + 2;
       let swap = null;
 
       if (leftChildIdx < length) {
-        let leftChild = this.elements[leftChildIdx];
+        const leftChild = this.elements[leftChildIdx];
         if (leftChild.priority < element.priority) {
           swap = leftChildIdx;
         }
       }
 
       if (rightChildIdx < length) {
-        let rightChild = this.elements[rightChildIdx];
+        const rightChild = this.elements[rightChildIdx];
         if (
           (swap === null && rightChild.priority < element.priority) ||
           (swap !== null && rightChild.priority < this.elements[swap].priority)

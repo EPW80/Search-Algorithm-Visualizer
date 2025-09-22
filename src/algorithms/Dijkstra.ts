@@ -1,101 +1,107 @@
-import { searchHelpers } from "../helpers/searchHelpers";
+import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
 import PriorityQueue from "../helpers/PriorityQueue";
 import { CellState } from "../context/GridContext";
 
+export class DijkstraAlgorithm extends BaseAlgorithm {
+  execute(
+    grid: CellState[][],
+    start: [number, number],
+    end: [number, number]
+  ): AlgorithmResult {
+    this.resetState();
+    this.validateInputs(grid, start, end);
+
+    const visited: [number, number][] = [];
+    let pathArray: [number, number][] | null = null;
+
+    const pathMap = new Map<string, [number, number]>();
+    const distance = new Map<string, number>();
+
+    const priorityQueue = new PriorityQueue<[number, number]>();
+
+    // Initialize distances
+    for (let i = 0; i < grid.length; i++) {
+      const row = grid[i];
+      if (!row) continue;
+
+      for (let j = 0; j < row.length; j++) {
+        const cell = row[j];
+        if (!cell || cell.isWall) continue;
+
+        const cellKey = this.createKey([i, j]);
+        if (cell.isStart) {
+          distance.set(cellKey, 0);
+        } else {
+          distance.set(cellKey, Infinity);
+        }
+      }
+    }
+
+    priorityQueue.push(start, 0);
+
+    while (priorityQueue.size() > 0) {
+      const minCell = priorityQueue.pop();
+      if (!minCell) break;
+
+      const currentNode = minCell.value;
+      const currentKey = this.createKey(currentNode);
+
+      // Skip if already visited
+      if (this.isVisited(currentNode, visited)) {
+        continue;
+      }
+
+      visited.push(currentNode);
+
+      // Check if target is reached
+      if (this.isTargetReached(currentNode, end)) {
+        pathArray = this.reconstructPath(pathMap, end, start);
+        break;
+      }
+
+      const neighbors = this.getValidNeighbors(currentNode, grid);
+
+      for (const neighbor of neighbors) {
+        const [row, col] = neighbor;
+        const neighborCell = grid[row]?.[col];
+
+        if (!neighborCell || neighborCell.isWall) continue;
+
+        const neighborKey = this.createKey(neighbor);
+
+        // Skip if already visited
+        if (this.isVisited(neighbor, visited)) {
+          continue;
+        }
+
+        // Calculate new distance
+        const edgeWeight = this.getCellWeight(neighborCell);
+        const currentDistance = distance.get(currentKey) || Infinity;
+        const potentialDistance = currentDistance + edgeWeight;
+        const neighborDistance = distance.get(neighborKey) || Infinity;
+
+        if (potentialDistance < neighborDistance) {
+          distance.set(neighborKey, potentialDistance);
+          pathMap.set(neighborKey, currentNode);
+
+          // Add to priority queue if not already processed
+          if (!this.isVisited(neighbor, visited)) {
+            priorityQueue.push(neighbor, potentialDistance);
+          }
+        }
+      }
+    }
+
+    return this.createResult(grid, visited, pathArray);
+  }
+}
+
+// Legacy function wrapper for backward compatibility
 export function Dijkstra(
   grid: CellState[][],
   start: [number, number],
   end: [number, number]
-) {
-  const visited: [number, number][] = [];
-  let pathArray: [number, number][] | null = [];
-
-  const path: { [key: string]: [number, number] | null } = {};
-  const distance: { [key: string]: number } = {};
-
-  const priorityQueue = new PriorityQueue<[number, number]>();
-
-  // Initialize distances
-  for (let i = 0; i < grid.length; i++) {
-    for (let j = 0; j < grid[0].length; j++) {
-      const thisCell = grid[i][j];
-      const thisCellKey = [i, j].toString();
-
-      if (!thisCell.isWall) {
-        if (thisCell.isStart) {
-          distance[thisCellKey] = 0;
-        } else {
-          distance[thisCellKey] = Infinity;
-        }
-        path[thisCellKey] = null;
-      }
-    }
-  }
-
-  priorityQueue.push(start, 0);
-
-  while (priorityQueue.size() > 0) {
-    const minCell = priorityQueue.pop();
-    if (!minCell) break;
-    const currentNode = minCell.value;
-
-    // Skip if already visited
-    if (visited.some((node) => searchHelpers.arraysMatch(node, currentNode))) {
-      continue;
-    }
-
-    visited.push(currentNode);
-
-    // Target found
-    if (searchHelpers.arraysMatch(currentNode, end)) {
-      pathArray = searchHelpers.getPath(path, end);
-      break;
-    }
-
-    const neighbors = searchHelpers.getNeighbours(
-      currentNode,
-      grid,
-      grid.length,
-      grid[0].length
-    );
-
-    for (const neighbor of neighbors) {
-      const [row, col] = neighbor;
-      const neighborCell = grid[row][col];
-      const neighborKey = neighbor.toString();
-      const currentNodeKey = currentNode.toString();
-
-      // Skip walls and already visited nodes
-      if (
-        neighborCell.isWall ||
-        visited.some((node) => searchHelpers.arraysMatch(node, neighbor))
-      ) {
-        continue;
-      }
-
-      // Calculate new distance (weighted nodes cost more)
-      const edgeWeight = neighborCell.isWeight ? 10 : 1;
-      const potentialDistance = distance[currentNodeKey] + edgeWeight;
-
-      if (potentialDistance < distance[neighborKey]) {
-        distance[neighborKey] = potentialDistance;
-        path[neighborKey] = currentNode;
-
-        // Add to priority queue if not already processed
-        if (
-          !visited.some((node) => searchHelpers.arraysMatch(node, neighbor))
-        ) {
-          priorityQueue.push(neighbor, potentialDistance);
-        }
-      }
-    }
-  }
-
-  const finalGrid = searchHelpers.updateGrid(
-    searchHelpers.updateGrid(grid, visited, false),
-    pathArray || [],
-    true
-  );
-
-  return { newGrid: finalGrid, gridWithPath: finalGrid, visited, pathArray };
+): AlgorithmResult {
+  const algorithm = new DijkstraAlgorithm();
+  return algorithm.execute(grid, start, end);
 }

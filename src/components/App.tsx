@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GridProvider, useGrid } from '../context/GridContext';
 import Grid from '../components/Grid';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import '../styles/App.css';
 import '../styles/Dropdown.css'; // Import dropdown styles
 import { AStar } from '../algorithms/AStar'; // Import the AStar algorithm
@@ -12,9 +13,11 @@ import { animateAlgorithm, resetGridAnimations, AnimationSpeed, AnimationSpeedTy
 
 const App: React.FC = () => {
   return (
-    <GridProvider>
-      <AppContent />
-    </GridProvider>
+    <ErrorBoundary>
+      <GridProvider>
+        <AppContent />
+      </GridProvider>
+    </ErrorBoundary>
   );
 };
 
@@ -39,24 +42,38 @@ const AppContent: React.FC = () => {
 
   const findStartNode = (): [number, number] => {
     for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        if (grid[row][col].isStart) {
-          return [row, col];
+      const currentRow = grid[row];
+      if (currentRow) {
+        for (let col = 0; col < currentRow.length; col++) {
+          const currentCell = currentRow[col];
+          if (currentCell && currentCell.isStart) {
+            return [row, col];
+          }
         }
       }
     }
-    return [10, 5]; // Default fallback
+    // Dynamic fallback: use grid center or safe position
+    const safeRow = Math.min(10, grid.length - 1);
+    const safeCol = Math.min(5, (grid[0]?.length || 1) - 1);
+    return [safeRow, safeCol];
   };
 
   const findEndNode = (): [number, number] => {
     for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        if (grid[row][col].isEnd) {
-          return [row, col];
+      const currentRow = grid[row];
+      if (currentRow) {
+        for (let col = 0; col < currentRow.length; col++) {
+          const currentCell = currentRow[col];
+          if (currentCell && currentCell.isEnd) {
+            return [row, col];
+          }
         }
       }
     }
-    return [10, 45]; // Default fallback
+    // Dynamic fallback: use grid right side or safe position
+    const safeRow = Math.min(10, grid.length - 1);
+    const safeCol = Math.max(0, Math.min(45, (grid[0]?.length || 50) - 1));
+    return [safeRow, safeCol];
   };
 
   const handleVisualizeClick = async () => {
@@ -66,6 +83,37 @@ const AppContent: React.FC = () => {
 
       const startNode = findStartNode();
       const endNode = findEndNode();
+
+      console.log('🎯 Algorithm execution setup:', {
+        algorithm: selectedAlgorithm,
+        startNode,
+        endNode,
+        startCell: grid[startNode[0]]?.[startNode[1]],
+        endCell: grid[endNode[0]]?.[endNode[1]],
+        gridSize: `${grid.length}x${grid[0]?.length || 0}`,
+        startEqualsEnd: startNode[0] === endNode[0] && startNode[1] === endNode[1]
+      });
+
+      // Validate that start and end positions are within bounds and not walls
+      const startCell = grid[startNode[0]]?.[startNode[1]];
+      const endCell = grid[endNode[0]]?.[endNode[1]];
+      
+      if (!startCell || !endCell) {
+        console.error('❌ Invalid start or end position - outside grid bounds');
+        setIsAnimating(false);
+        return;
+      }
+      
+      if (startCell.isWall || endCell.isWall) {
+        console.warn('⚠️ Start or end position is on a wall');
+        // Clear walls from start/end positions
+        if (startCell.isWall) {
+          updateCellState(startNode[0], startNode[1], { isWall: false });
+        }
+        if (endCell.isWall) {
+          updateCellState(endNode[0], endNode[1], { isWall: false });
+        }
+      }
 
       let algorithmResult: any = null;
 
@@ -95,19 +143,29 @@ const AppContent: React.FC = () => {
             return;
         }
 
-        if (algorithmResult && algorithmResult.visited && algorithmResult.pathArray) {
+        if (algorithmResult && algorithmResult.visited) {
           console.log('📊 Algorithm result:', {
             visitedCount: algorithmResult.visited.length,
-            pathCount: algorithmResult.pathArray.length
+            pathCount: algorithmResult.pathArray?.length || 0,
+            pathFound: algorithmResult.pathArray !== null
           });
 
           // Animate the algorithm execution
           await animateAlgorithm(
             algorithmResult.visited,
-            algorithmResult.pathArray,
+            algorithmResult.pathArray || [], // Use empty array if no path found
             updateCellState,
             animationSpeed
           );
+          
+          // Log result status
+          if (algorithmResult.pathArray === null) {
+            console.info('🚫 No path found - target may be unreachable');
+          } else if (algorithmResult.pathArray.length === 0) {
+            console.info('🎯 Already at target - no movement needed');
+          } else {
+            console.info('✅ Path found successfully');
+          }
         } else {
           console.warn('⚠️ Algorithm result missing data:', {
             hasResult: !!algorithmResult,
