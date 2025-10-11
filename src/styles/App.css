@@ -97,30 +97,16 @@ main {
   text-decoration: none;
 }
 
-/* Legend styles */
-.legend {
+/* Interactive Legend Section */
+.legend-section {
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-wrap: wrap; /* Optional: Wrap to a new line if needed */
-  gap: 15px; /* Space between legend items */
-  margin-top: 10px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.legend-icon {
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  border: 1px solid #ccc;
-}
-
-/* Legend icon colors */
+/* Keep basic legend icon colors for compatibility */
 .start-node {
   background-color: #28a745;
 }
@@ -128,7 +114,7 @@ main {
   background-color: #dc3545;
 }
 .weight-node {
-  background-color: black;
+  background-color: #ff9800;
 }
 .path-node {
   background-color: #ffc107;

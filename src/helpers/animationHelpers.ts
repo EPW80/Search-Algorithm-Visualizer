@@ -77,7 +77,7 @@ export const clearAnimations = async (
   }
 };
 
-// Reset all animations on the grid
+// Reset all animations on the grid (clears visited/path states only)
 export const resetGridAnimations = (
   grid: CellState[][],
   updateCellState: (row: number, col: number, newState: Partial<CellState>) => void
@@ -87,6 +87,22 @@ export const resetGridAnimations = (
       const cell = grid[row][col];
       if (cell.isVisited || cell.isPath) {
         updateCellState(row, col, { isVisited: false, isPath: false });
+      }
+    }
+  }
+};
+
+// Reset entire board (clears visited, path, and walls)
+export const resetBoard = (
+  grid: CellState[][],
+  updateCellState: (row: number, col: number, newState: Partial<CellState>) => void
+): void => {
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[row].length; col++) {
+      const cell = grid[row][col];
+      // Clear walls, visited, and path states (but preserve start/end nodes)
+      if (cell.isWall || cell.isVisited || cell.isPath) {
+        updateCellState(row, col, { isWall: false, isVisited: false, isPath: false });
       }
     }
   }

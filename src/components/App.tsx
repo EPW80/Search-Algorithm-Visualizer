@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { GridProvider, useGrid } from '../context/GridContext';
-import Grid from '../components/Grid';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import '../styles/App.css';
-import '../styles/Dropdown.css'; // Import dropdown styles
+import React, { useEffect, useState } from 'react';
 import { AStar } from '../algorithms/AStar'; // Import the AStar algorithm
 import { BFS } from '../algorithms/BFS';
 import { DFS } from '../algorithms/DFS';
 import { Dijkstra } from '../algorithms/Dijkstra';
 import { GBFS } from '../algorithms/GBFS';
-import { animateAlgorithm, resetGridAnimations, AnimationSpeed, AnimationSpeedType } from '../helpers/animationHelpers';
+import { MazeGenerator, animateMazeGeneration } from '../algorithms/MazeGenerator';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import Grid from '../components/Grid';
+import { InteractiveLegend } from '../components/InteractiveLegend';
+import { GridProvider, useGrid } from '../context/GridContext';
+import { AnimationSpeed, AnimationSpeedType, animateAlgorithm, resetBoard, resetGridAnimations } from '../helpers/animationHelpers';
+import '../styles/App.css';
+import '../styles/Dropdown.css'; // Import dropdown styles
 
 const App: React.FC = () => {
   return (
@@ -25,6 +27,7 @@ const AppContent: React.FC = () => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>('BFS');
   const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeedType>(AnimationSpeed.NORMAL);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [currentDrawMode, setCurrentDrawMode] = useState<string>('wall');
   const { grid, updateCellState } = useGrid();
 
   const handleAlgorithmSelect = (algorithm: string) => {
@@ -38,6 +41,11 @@ const AppContent: React.FC = () => {
       speed === AnimationSpeed.NORMAL ? 'Normal' :
         speed === AnimationSpeed.FAST ? 'Fast' : 'Instant';
     console.log(`⚡ Selected speed: ${speedName}`);
+  };
+
+  const handleDrawModeChange = (mode: string) => {
+    setCurrentDrawMode(mode);
+    console.log(`🎨 Draw mode changed to: ${mode}`);
   };
 
   const findStartNode = (): [number, number] => {
@@ -97,13 +105,13 @@ const AppContent: React.FC = () => {
       // Validate that start and end positions are within bounds and not walls
       const startCell = grid[startNode[0]]?.[startNode[1]];
       const endCell = grid[endNode[0]]?.[endNode[1]];
-      
+
       if (!startCell || !endCell) {
         console.error('❌ Invalid start or end position - outside grid bounds');
         setIsAnimating(false);
         return;
       }
-      
+
       if (startCell.isWall || endCell.isWall) {
         console.warn('⚠️ Start or end position is on a wall');
         // Clear walls from start/end positions
@@ -157,7 +165,7 @@ const AppContent: React.FC = () => {
             updateCellState,
             animationSpeed
           );
-          
+
           // Log result status
           if (algorithmResult.pathArray === null) {
             console.info('🚫 No path found - target may be unreachable');
@@ -187,8 +195,71 @@ const AppContent: React.FC = () => {
 
   const handleResetBoard = () => {
     if (!isAnimating) {
+      resetBoard(grid, updateCellState);
+      console.log('🔄 Board reset - all walls, visited nodes, and paths cleared');
+    }
+  };
+
+  const handleMazeGeneration = async (mazeType: string) => {
+    if (isAnimating) {
+      console.warn('Cannot generate maze while animation is running');
+      return;
+    }
+
+    setIsAnimating(true);
+    console.log(`🧱 Generating ${mazeType} maze`);
+
+    try {
+      // First clear existing walls
       resetGridAnimations(grid, updateCellState);
-      console.log('🔄 Board reset');
+
+      // Wait a bit for the grid to clear
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const mazeGenerator = new MazeGenerator(grid);
+      let mazeResult;
+
+      switch (mazeType) {
+        case 'recursive-division':
+          mazeResult = mazeGenerator.recursiveDivision();
+          break;
+        case 'random':
+          mazeResult = mazeGenerator.randomMaze(0.35);
+          break;
+        case 'spiral':
+          mazeResult = mazeGenerator.spiralPattern();
+          break;
+        case 'vertical-skew':
+          mazeResult = mazeGenerator.verticalSkew();
+          break;
+        case 'horizontal-skew':
+          mazeResult = mazeGenerator.horizontalSkew();
+          break;
+        case 'clear':
+          mazeResult = mazeGenerator.clearWalls();
+          break;
+        default:
+          console.warn('Unknown maze type:', mazeType);
+          return;
+      }
+
+      // Animate the maze generation
+      const speed = animationSpeed === AnimationSpeed.SLOW ? 50 :
+        animationSpeed === AnimationSpeed.NORMAL ? 20 :
+          animationSpeed === AnimationSpeed.FAST ? 5 : 0;
+
+      if (mazeType === 'clear') {
+        // For clearing, we don't need animation
+        resetGridAnimations(grid, updateCellState);
+      } else {
+        await animateMazeGeneration(mazeResult.animationOrder, updateCellState, speed);
+      }
+
+      console.log(`✅ ${mazeType} maze generation complete`);
+    } catch (error) {
+      console.error('Error generating maze:', error);
+    } finally {
+      setIsAnimating(false);
     }
   };
 
@@ -228,8 +299,57 @@ const AppContent: React.FC = () => {
             Reset Board
           </button>
           <div className="dropdown">
-            <button className="btn dropdown-btn">Mazes & Patterns</button>
-            {/* Dropdown content goes here */}
+            <button className="btn dropdown-btn" aria-label="Select maze pattern">Mazes & Patterns</button>
+            <div className="dropdown-content" role="menu">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('recursive-division')}
+                disabled={isAnimating}
+              >
+                Recursive Division
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('random')}
+                disabled={isAnimating}
+              >
+                Random Maze
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('spiral')}
+                disabled={isAnimating}
+              >
+                Spiral Pattern
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('vertical-skew')}
+                disabled={isAnimating}
+              >
+                Vertical Skew
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('horizontal-skew')}
+                disabled={isAnimating}
+              >
+                Horizontal Skew
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleMazeGeneration('clear')}
+                disabled={isAnimating}
+              >
+                Clear Walls
+              </button>
+            </div>
           </div>
           <div className="dropdown">
             <button className="btn dropdown-btn" aria-label="Select algorithm">Algorithms</button>
@@ -254,15 +374,12 @@ const AppContent: React.FC = () => {
         </div>
       </header>
 
-      {/* Legend Section placed outside the header */}
-      <div className="legend">
-        <div className="legend-item"><span className="legend-icon start-node"></span> Start Node</div>
-        <div className="legend-item"><span className="legend-icon target-node"></span> Target Node</div>
-        <div className="legend-item"><span className="legend-icon weight-node"></span> Weight Node</div>
-        <div className="legend-item"><span className="legend-icon path-node"></span> Path Node</div>
-        <div className="legend-item"><span className="legend-icon visited-node"></span> Visited Node</div>
-        <div className="legend-item"><span className="legend-icon unvisited-node"></span> Unvisited Node</div>
-        <div className="legend-item"><span className="legend-icon wall-node"></span> Wall Node</div>
+      {/* Interactive Legend Section */}
+      <div className="legend-section">
+        <InteractiveLegend
+          currentDrawMode={currentDrawMode}
+          onDrawModeChange={handleDrawModeChange}
+        />
       </div>
 
       <main>
