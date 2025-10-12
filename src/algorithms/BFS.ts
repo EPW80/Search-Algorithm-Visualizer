@@ -1,5 +1,5 @@
-import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
-import { CellState } from "../context/GridContext";
+import { BaseAlgorithm, AlgorithmResult } from './BaseAlgorithm';
+import { CellState } from '../context/GridContext';
 
 export class BFSAlgorithm extends BaseAlgorithm {
   execute(

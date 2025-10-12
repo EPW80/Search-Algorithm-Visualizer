@@ -1,50 +1,185 @@
+/* Holographic Blockchain Dropdown Styles */
 .dropdown {
   position: relative;
   display: inline-block;
 }
 
 .dropdown-btn {
-  background-color: #007bff; /* Blue background */
+  background: linear-gradient(135deg, #0099cc, #00d4ff);
   color: white;
-  padding: 10px;
+  padding: 12px 24px;
   font-size: 14px;
-  border: none;
+  font-weight: 600;
+  border: 2px solid #00d4ff;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.6),
+              inset 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Holographic shimmer effect */
+.dropdown-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: dropdownShimmer 3s infinite;
+}
+
+@keyframes dropdownShimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.dropdown-btn:hover {
+  background: linear-gradient(135deg, #00d4ff, #00fff5);
+  border-color: #00fff5;
+  box-shadow: 0 6px 25px rgba(0, 255, 245, 0.7),
+              0 0 40px rgba(0, 212, 255, 0.5),
+              inset 0 -2px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.dropdown-btn:active {
+  transform: translateY(0);
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  background: linear-gradient(180deg, rgba(21, 27, 61, 0.98) 0%, rgba(10, 14, 39, 0.98) 100%);
+  backdrop-filter: blur(15px);
+  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4),
+              0 4px 16px rgba(0, 153, 204, 0.3),
+              inset 0 1px 0 rgba(0, 255, 245, 0.2);
+  z-index: 1000;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.5);
+  margin-top: 8px;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.3s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Holographic scanning effect on dropdown */
+.dropdown-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 245, 0.8),
+    transparent
+  );
+  animation: dropdownScan 2s linear infinite;
+}
+
+@keyframes dropdownScan {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(300px);
+  }
 }
 
 .dropdown-content a,
 .dropdown-content button {
-  color: black;
-  padding: 12px 16px;
+  color: #00fff5;
+  padding: 14px 20px;
   text-decoration: none;
   display: block;
   border: none;
-  background: none;
+  background: transparent;
   width: 100%;
   text-align: left;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  letter-spacing: 0.5px;
 }
 
+.dropdown-content a:last-child,
+.dropdown-content button:last-child {
+  border-bottom: none;
+}
+
+/* Glow effect on hover */
 .dropdown-content a:hover,
 .dropdown-content button:hover {
-  background-color: #f1f1f1;
+  background: linear-gradient(90deg,
+    rgba(0, 212, 255, 0.15),
+    rgba(0, 255, 245, 0.25),
+    rgba(0, 212, 255, 0.15)
+  );
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 255, 245, 0.8);
+  padding-left: 28px;
+  border-left: 3px solid #00fff5;
+  box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.2);
 }
 
 .dropdown-content button:focus {
-  background-color: #e3f2fd;
-  outline: 2px solid #2196f3;
+  background: linear-gradient(90deg,
+    rgba(0, 153, 204, 0.2),
+    rgba(0, 212, 255, 0.3),
+    rgba(0, 153, 204, 0.2)
+  );
+  outline: 2px solid #00d4ff;
   outline-offset: -2px;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+}
+
+.dropdown-content button:disabled {
+  color: #4a5568;
+  cursor: not-allowed;
+  opacity: 0.4;
+  background: transparent;
+}
+
+.dropdown-content button:disabled:hover {
+  background: transparent;
+  padding-left: 20px;
+  border-left: none;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 .dropdown:hover .dropdown-content {
@@ -52,5 +187,48 @@
 }
 
 .dropdown:hover .dropdown-btn {
-  background-color: #0056b3; /* Darker blue on hover */
+  background: linear-gradient(135deg, #00d4ff, #00fff5);
+  border-color: #00fff5;
+  box-shadow: 0 6px 25px rgba(0, 255, 245, 0.7),
+              0 0 40px rgba(0, 212, 255, 0.5),
+              inset 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Add blockchain-inspired grid lines */
+.dropdown-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dropdown-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .dropdown-content {
+    min-width: 180px;
+  }
+
+  .dropdown-content a,
+  .dropdown-content button {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .dropdown-content a:hover,
+  .dropdown-content button:hover {
+    padding-left: 24px;
+  }
 }

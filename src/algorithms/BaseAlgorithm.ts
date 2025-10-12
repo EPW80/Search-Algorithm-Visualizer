@@ -1,5 +1,5 @@
-import { CellState } from "../context/GridContext";
-import { searchHelpers } from "../helpers/searchHelpers";
+import { CellState } from '../context/GridContext';
+import { searchHelpers } from '../helpers/searchHelpers';
 
 export interface AlgorithmResult {
   newGrid: CellState[][];
@@ -188,7 +188,7 @@ export abstract class BaseAlgorithm {
     end: [number, number]
   ): void {
     if (!grid || grid.length === 0 || !grid[0] || grid[0].length === 0) {
-      throw new Error("Invalid grid: Grid must be non-empty");
+      throw new Error('Invalid grid: Grid must be non-empty');
     }
 
     const [startRow, startCol] = start;
@@ -197,19 +197,19 @@ export abstract class BaseAlgorithm {
     const cols = grid[0].length;
 
     if (startRow < 0 || startRow >= rows || startCol < 0 || startCol >= cols) {
-      throw new Error("Invalid start position: Out of grid bounds");
+      throw new Error('Invalid start position: Out of grid bounds');
     }
 
     if (endRow < 0 || endRow >= rows || endCol < 0 || endCol >= cols) {
-      throw new Error("Invalid end position: Out of grid bounds");
+      throw new Error('Invalid end position: Out of grid bounds');
     }
 
     if (grid[startRow]?.[startCol]?.isWall) {
-      throw new Error("Invalid start position: Cannot start on a wall");
+      throw new Error('Invalid start position: Cannot start on a wall');
     }
 
     if (grid[endRow]?.[endCol]?.isWall) {
-      throw new Error("Invalid end position: Cannot end on a wall");
+      throw new Error('Invalid end position: Cannot end on a wall');
     }
   }
 }

@@ -1,6 +1,6 @@
-import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
-import PriorityQueue from "../helpers/PriorityQueue";
-import { CellState } from "../context/GridContext";
+import { CellState } from '../context/GridContext';
+import PriorityQueue from '../helpers/PriorityQueue';
+import { AlgorithmResult, BaseAlgorithm } from './BaseAlgorithm';
 
 export class AStarAlgorithm extends BaseAlgorithm {
   execute(
@@ -22,8 +22,9 @@ export class AStarAlgorithm extends BaseAlgorithm {
 
     const startKey = this.createKey(start);
     gScore.set(startKey, 0);
-    fScore.set(startKey, this.calculateManhattanDistance(start, end));
-    openSet.push(start, fScore.get(startKey)!);
+    const startFScore = this.calculateManhattanDistance(start, end);
+    fScore.set(startKey, startFScore);
+    openSet.push(start, startFScore);
 
     // Initialize all non-wall cells
     for (let i = 0; i < grid.length; i++) {
@@ -49,72 +50,49 @@ export class AStarAlgorithm extends BaseAlgorithm {
       const currentNode = minCell.value;
       const currentKey = this.createKey(currentNode);
 
-      console.log(`🔍 A* Processing node [${currentNode}]`);
-
       if (this.isTargetReached(currentNode, end)) {
         pathArray = this.reconstructPath(pathMap, end, start);
         break;
       }
 
-      if (!visited.some((node) => this.isTargetReached(node, currentNode))) {
+      if (!visited.some(node => this.isTargetReached(node, currentNode))) {
         visited.push(currentNode);
-        console.log(`✅ Added [${currentNode}] to visited (total: ${visited.length})`);
       }
 
       const neighbors = this.getValidNeighbors(currentNode, grid);
-      console.log(`🔍 Node [${currentNode}] has ${neighbors.length} neighbors:`, neighbors.map(n => `[${n[0]}, ${n[1]}]`));
 
       for (const neighbor of neighbors) {
         const [row, col] = neighbor;
         const neighborCell = grid[row]?.[col];
 
-        if (!neighborCell) {
-          console.log(`❌ Neighbor [${neighbor}] cell is undefined`);
+        if (!neighborCell || neighborCell.isWall) {
           continue;
         }
-
-        if (neighborCell.isWall) {
-          console.log(`🧱 Neighbor [${neighbor}] is a wall`);
-          continue;
-        }
-
-        console.log(`🔍 Processing neighbor [${neighbor}], cell:`, {
-          isWall: neighborCell.isWall,
-          isStart: neighborCell.isStart,
-          isEnd: neighborCell.isEnd,
-          isWeight: neighborCell.isWeight
-        });
 
         const neighborKey = this.createKey(neighbor);
         const currentGScore = gScore.get(currentKey);
         if (currentGScore === undefined) {
-          console.log(`❌ ERROR: currentGScore is undefined for [${currentNode}]`);
           continue;
         }
-        
-        const tentativeGScore = currentGScore + this.getCellWeight(neighborCell);
+
+        const tentativeGScore =
+          currentGScore + this.getCellWeight(neighborCell);
         const neighborGScore = gScore.get(neighborKey) || Infinity;
-        
-        console.log(`📊 Score comparison for [${neighbor}]: tentative=${tentativeGScore}, current=${neighborGScore}, currentNodeScore=${currentGScore}`);
 
         if (tentativeGScore < neighborGScore) {
           pathMap.set(neighborKey, currentNode);
           gScore.set(neighborKey, tentativeGScore);
           const heuristic = this.calculateManhattanDistance(neighbor, end);
-          fScore.set(neighborKey, tentativeGScore + heuristic);
+          const newFScore = tentativeGScore + heuristic;
+          fScore.set(neighborKey, newFScore);
 
           if (
-            !openSet.hasElement((element) =>
+            !openSet.hasElement(element =>
               this.isTargetReached(element.value, neighbor)
             )
           ) {
-            openSet.push(neighbor, fScore.get(neighborKey)!);
-            console.log(`✅ Added neighbor [${neighbor}] to openSet with fScore ${fScore.get(neighborKey)}`);
-          } else {
-            console.log(`⏭️ Neighbor [${neighbor}] already in openSet`);
+            openSet.push(neighbor, newFScore);
           }
-        } else {
-          console.log(`⏭️ Neighbor [${neighbor}] has worse score (${tentativeGScore} >= ${neighborGScore})`);
         }
       }
     }
