@@ -10,13 +10,11 @@ export interface LegendItem {
 }
 
 interface InteractiveLegendProps {
-    onToggleNodeType?: (nodeType: string) => void;
     currentDrawMode?: string;
     onDrawModeChange?: (mode: string) => void;
 }
 
 export const InteractiveLegend: React.FC<InteractiveLegendProps> = ({
-    onToggleNodeType,
     currentDrawMode = 'wall',
     onDrawModeChange
 }) => {

@@ -1,0 +1,388 @@
+/* Holographic Algorithm Statistics Panel */
+.algorithm-stats {
+  background: linear-gradient(180deg, rgba(21, 27, 61, 0.95) 0%, rgba(10, 14, 39, 0.9) 100%);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4),
+              0 4px 16px rgba(0, 153, 204, 0.3),
+              inset 0 1px 0 rgba(0, 255, 245, 0.2);
+  min-width: 320px;
+  max-width: 420px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+/* Holographic scanning line effect */
+.algorithm-stats::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 245, 0.8),
+    transparent
+  );
+  animation: statsScan 3s linear infinite;
+}
+
+@keyframes statsScan {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(400px);
+  }
+}
+
+/* Blockchain grid pattern overlay */
+.algorithm-stats::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+/* Header Section */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0, 212, 255, 0.4);
+  position: relative;
+  z-index: 1;
+}
+
+.stats-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #00fff5;
+  text-shadow: 0 0 15px rgba(0, 255, 245, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid;
+  box-shadow: 0 0 15px;
+}
+
+.status-waiting {
+  background: linear-gradient(135deg, rgba(100, 100, 120, 0.3), rgba(80, 80, 100, 0.3));
+  color: #a0b0d0;
+  border-color: #6080a0;
+  box-shadow: 0 0 10px rgba(96, 128, 160, 0.4);
+}
+
+.status-running {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 153, 204, 0.3));
+  color: #00fff5;
+  border-color: #00d4ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+  animation: runningPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes runningPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 245, 0.9);
+  }
+}
+
+.status-success {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 204, 106, 0.3));
+  color: #00ff88;
+  border-color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+}
+
+.status-failed {
+  background: linear-gradient(135deg, rgba(255, 0, 128, 0.3), rgba(204, 0, 102, 0.3));
+  color: #ff3399;
+  border-color: #ff0080;
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
+}
+
+/* Stats Content */
+.stats-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Algorithm Name Display */
+.stat-item.algorithm-name {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: linear-gradient(90deg,
+    rgba(0, 212, 255, 0.1),
+    rgba(0, 255, 245, 0.15),
+    rgba(0, 212, 255, 0.1)
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  text-align: center;
+}
+
+.stat-item.algorithm-name .stat-label {
+  font-size: 11px;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+.stat-item.algorithm-name .stat-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item:hover {
+  background: linear-gradient(90deg,
+    rgba(0, 212, 255, 0.1),
+    rgba(0, 255, 245, 0.15),
+    rgba(0, 212, 255, 0.1)
+  );
+  border-color: rgba(0, 255, 245, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a0c4d4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.stat-icon {
+  font-size: 14px;
+  filter: drop-shadow(0 0 3px rgba(0, 212, 255, 0.6));
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #00fff5;
+  text-shadow: 0 0 10px rgba(0, 255, 245, 0.6);
+  line-height: 1;
+}
+
+.stat-value.highlight {
+  background: linear-gradient(135deg, #00fff5, #00d4ff, #9d4edd);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Efficiency Rating Colors */
+.efficiency-excellent {
+  color: #00ff88 !important;
+  text-shadow: 0 0 15px rgba(0, 255, 136, 0.8) !important;
+}
+
+.efficiency-good {
+  color: #00d4ff !important;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8) !important;
+}
+
+.efficiency-fair {
+  color: #ffd700 !important;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8) !important;
+}
+
+.efficiency-poor {
+  color: #ff3399 !important;
+  text-shadow: 0 0 15px rgba(255, 51, 153, 0.8) !important;
+}
+
+.efficiency-na {
+  color: #a0b0d0 !important;
+  text-shadow: none !important;
+}
+
+/* Efficiency Bar */
+.efficiency-bar-container {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+}
+
+.efficiency-bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a0c4d4;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.efficiency-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.efficiency-bar-fill {
+  height: 100%;
+  transition: width 0.8s ease-out;
+  position: relative;
+  border-radius: 6px;
+  box-shadow: 0 0 15px;
+}
+
+.efficiency-bar-fill.efficiency-excellent {
+  background: linear-gradient(90deg, #00ff88, #00cc6a);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+}
+
+.efficiency-bar-fill.efficiency-good {
+  background: linear-gradient(90deg, #00d4ff, #0099cc);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+}
+
+.efficiency-bar-fill.efficiency-fair {
+  background: linear-gradient(90deg, #ffd700, #ffaa00);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.efficiency-bar-fill.efficiency-poor {
+  background: linear-gradient(90deg, #ff3399, #ff0080);
+  box-shadow: 0 0 15px rgba(255, 51, 153, 0.8);
+}
+
+.efficiency-bar-value {
+  text-align: right;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+/* Empty State */
+.algorithm-stats.empty-state {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-message {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-message p {
+  margin: 0;
+  font-size: 14px;
+  color: #a0c4d4;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .algorithm-stats {
+    min-width: 280px;
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  .stats-header h3 {
+    font-size: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-item.algorithm-name .stat-value {
+    font-size: 18px;
+  }
+}
+
+/* Dark mode enhancement */
+@media (prefers-color-scheme: dark) {
+  .algorithm-stats {
+    background: linear-gradient(180deg, rgba(10, 14, 39, 0.98) 0%, rgba(5, 7, 20, 0.95) 100%);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.5),
+                0 4px 16px rgba(0, 153, 204, 0.4),
+                inset 0 1px 0 rgba(0, 255, 245, 0.3);
+  }
+}

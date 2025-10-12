@@ -5,6 +5,7 @@ import { DFS } from '../algorithms/DFS';
 import { Dijkstra } from '../algorithms/Dijkstra';
 import { GBFS } from '../algorithms/GBFS';
 import { MazeGenerator, animateMazeGeneration } from '../algorithms/MazeGenerator';
+import { AlgorithmStats, AlgorithmStatsData } from '../components/AlgorithmStats';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import Grid from '../components/Grid';
 import { InteractiveLegend } from '../components/InteractiveLegend';
@@ -28,6 +29,14 @@ const AppContent: React.FC = () => {
   const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeedType>(AnimationSpeed.NORMAL);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [currentDrawMode, setCurrentDrawMode] = useState<string>('wall');
+  const [stats, setStats] = useState<AlgorithmStatsData>({
+    algorithmName: null,
+    nodesVisited: 0,
+    pathLength: 0,
+    executionTime: 0,
+    pathFound: false,
+    isRunning: false,
+  });
   const { grid, updateCellState } = useGrid();
 
   const handleAlgorithmSelect = (algorithm: string) => {
@@ -87,8 +96,20 @@ const AppContent: React.FC = () => {
   const handleVisualizeClick = async () => {
     if (selectedAlgorithm && !isAnimating) {
       setIsAnimating(true);
+
+      // Update stats to show running state
+      setStats({
+        algorithmName: selectedAlgorithm,
+        nodesVisited: 0,
+        pathLength: 0,
+        executionTime: 0,
+        pathFound: false,
+        isRunning: true,
+      });
+
       console.log(`🚀 Executing algorithm: ${selectedAlgorithm} at speed: ${animationSpeed === AnimationSpeed.INSTANT ? 'INSTANT' : `${animationSpeed}ms`}`);
 
+      const startTime = performance.now();
       const startNode = findStartNode();
       const endNode = findEndNode();
 
@@ -152,10 +173,15 @@ const AppContent: React.FC = () => {
         }
 
         if (algorithmResult && algorithmResult.visited) {
+          const executionTime = performance.now() - startTime;
+          const pathFound = algorithmResult.pathArray !== null;
+          const pathLength = pathFound ? algorithmResult.pathArray.length : 0;
+
           console.log('📊 Algorithm result:', {
             visitedCount: algorithmResult.visited.length,
-            pathCount: algorithmResult.pathArray?.length || 0,
-            pathFound: algorithmResult.pathArray !== null
+            pathCount: pathLength,
+            pathFound,
+            executionTime: `${executionTime.toFixed(2)}ms`
           });
 
           // Animate the algorithm execution
@@ -165,6 +191,16 @@ const AppContent: React.FC = () => {
             updateCellState,
             animationSpeed
           );
+
+          // Update statistics with final results
+          setStats({
+            algorithmName: selectedAlgorithm,
+            nodesVisited: algorithmResult.visited.length,
+            pathLength,
+            executionTime,
+            pathFound,
+            isRunning: false,
+          });
 
           // Log result status
           if (algorithmResult.pathArray === null) {
@@ -180,9 +216,27 @@ const AppContent: React.FC = () => {
             hasVisited: !!(algorithmResult && algorithmResult.visited),
             hasPath: !!(algorithmResult && algorithmResult.pathArray)
           });
+
+          // Update stats to show failure
+          setStats({
+            algorithmName: selectedAlgorithm,
+            nodesVisited: 0,
+            pathLength: 0,
+            executionTime: performance.now() - startTime,
+            pathFound: false,
+            isRunning: false,
+          });
         }
       } catch (error) {
         console.error('Error executing algorithm:', error);
+        setStats({
+          algorithmName: selectedAlgorithm,
+          nodesVisited: 0,
+          pathLength: 0,
+          executionTime: performance.now() - startTime,
+          pathFound: false,
+          isRunning: false,
+        });
       } finally {
         setIsAnimating(false);
       }
@@ -196,6 +250,15 @@ const AppContent: React.FC = () => {
   const handleResetBoard = () => {
     if (!isAnimating) {
       resetBoard(grid, updateCellState);
+      // Reset statistics
+      setStats({
+        algorithmName: null,
+        nodesVisited: 0,
+        pathLength: 0,
+        executionTime: 0,
+        pathFound: false,
+        isRunning: false,
+      });
       console.log('🔄 Board reset - all walls, visited nodes, and paths cleared');
     }
   };
@@ -374,12 +437,13 @@ const AppContent: React.FC = () => {
         </div>
       </header>
 
-      {/* Interactive Legend Section */}
+      {/* Interactive Legend and Stats Section */}
       <div className="legend-section">
         <InteractiveLegend
           currentDrawMode={currentDrawMode}
           onDrawModeChange={handleDrawModeChange}
         />
+        <AlgorithmStats stats={stats} />
       </div>
 
       <main>
