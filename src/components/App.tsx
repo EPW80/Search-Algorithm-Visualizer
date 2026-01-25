@@ -1,54 +1,185 @@
-import React, { useEffect, useState } from 'react';
-import { AStar } from '../algorithms/AStar'; // Import the AStar algorithm
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { AStar } from '../algorithms/AStar';
 import { BFS } from '../algorithms/BFS';
 import { DFS } from '../algorithms/DFS';
 import { Dijkstra } from '../algorithms/Dijkstra';
 import { GBFS } from '../algorithms/GBFS';
-import { MazeGenerator, animateMazeGeneration } from '../algorithms/MazeGenerator';
-import { AlgorithmStats, AlgorithmStatsData } from '../components/AlgorithmStats';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { FeatureErrorBoundary } from '../components/FeatureErrorBoundary';
 import Grid from '../components/Grid';
-import { InteractiveLegend } from '../components/InteractiveLegend';
-import { GridProvider, useGrid } from '../context/GridContext';
-import { AnimationSpeed, AnimationSpeedType, animateAlgorithm, resetBoard, resetGridAnimations } from '../helpers/animationHelpers';
-import '../styles/App.css';
-import '../styles/Dropdown.css'; // Import dropdown styles
+import { Loading } from '../components/Loading';
+import { GlobalScreenReaderAnnouncer, useScreenReaderAnnouncer } from '../components/ScreenReaderAnnouncer';
+import { Toolbar } from '../components/Toolbar';
+import { AnimationSpeed, resetBoard } from '../helpers/animationHelpers';
+import {
+  useAlgorithmComparison,
+  useAlgorithmExecution,
+  useGifExport,
+  useGridNavigation,
+  useGridPersistence,
+  useMazeGeneration,
+  useStats,
+  useSteppedExecution,
+  useUndoRedo,
+} from '../hooks';
+import { useGridStore } from '../store/gridStore';
+import { AlgorithmResult, AnimationSpeedType } from '../types';
+
+// Lazy load non-critical components
+const AlgorithmStats = lazy(() => import('../components/AlgorithmStats'));
+const InteractiveLegend = lazy(() => import('../components/InteractiveLegend'));
+const AlgorithmComparison = lazy(() => import('../components/AlgorithmComparison'));
 
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <GridProvider>
-        <AppContent />
-      </GridProvider>
+      <AppContent />
     </ErrorBoundary>
   );
 };
 
 const AppContent: React.FC = () => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>('BFS');
-  const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeedType>(AnimationSpeed.NORMAL);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeedType>(
+    AnimationSpeed.NORMAL
+  );
   const [currentDrawMode, setCurrentDrawMode] = useState<string>('wall');
-  const [stats, setStats] = useState<AlgorithmStatsData>({
-    algorithmName: null,
-    nodesVisited: 0,
-    pathLength: 0,
-    executionTime: 0,
-    pathFound: false,
-    isRunning: false,
+  const { announce } = useScreenReaderAnnouncer();
+
+  const grid = useGridStore((state) => state.grid);
+  const setGrid = useGridStore((state) => state.setGrid);
+  const updateCellState = useGridStore((state) => state.updateCellState);
+  const { stats, setStats, resetStats } = useStats();
+  const { findStartNode, findEndNode } = useGridNavigation(grid);
+
+  // Store last algorithm result for export
+  const lastAlgorithmResult = useRef<AlgorithmResult | null>(null);
+
+  const { isAnimating, executeAlgorithm } = useAlgorithmExecution({
+    grid,
+    updateCellState,
+    findStartNode,
+    findEndNode,
+    animationSpeed,
+    setStats,
   });
-  const { grid, updateCellState } = useGrid();
+
+  const { isGenerating, generateMaze } = useMazeGeneration({
+    grid,
+    updateCellState,
+    animationSpeed,
+  });
+
+  // Undo/Redo functionality
+  const {
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+    clearHistory,
+  } = useUndoRedo(updateCellState);
+
+  // Grid persistence (save/load)
+  const {
+    savedGrids,
+    saveGrid,
+    loadGrid,
+    deleteGrid,
+    exportGrid,
+    importGrid,
+  } = useGridPersistence(grid, setGrid);
+
+  // Step-by-step execution
+  const {
+    isStepping,
+    isPaused,
+    stepState,
+    initializeStepMode,
+    stepForward,
+    stepBackward,
+    play: playStep,
+    pause: pauseStep,
+    resetStepMode,
+    jumpToStep,
+  } = useSteppedExecution({
+    grid,
+    findStartNode,
+    findEndNode,
+    animationSpeed,
+  });
+
+  // Algorithm comparison mode
+  const {
+    comparisonState,
+    isComparing,
+    activateComparisonMode,
+    deactivateComparisonMode,
+    setComparisonAlgorithms,
+    startComparison,
+  } = useAlgorithmComparison({
+    grid,
+    findStartNode,
+    findEndNode,
+    animationSpeed,
+  });
+
+  // GIF/Video export
+  const {
+    isRecording,
+    recordingProgress,
+    exportVisualization,
+    exportGridImage,
+  } = useGifExport({
+    grid,
+    animationSpeed,
+  });
+
+  // Execute algorithm and store result for export
+  const executeAndStoreAlgorithm = useCallback((algorithm: string): AlgorithmResult | null => {
+    const startNode = findStartNode();
+    const endNode = findEndNode();
+
+    let result: AlgorithmResult | null = null;
+    switch (algorithm) {
+      case 'BFS':
+        result = BFS(grid, startNode, endNode);
+        break;
+      case 'DFS':
+        result = DFS(grid, startNode, endNode);
+        break;
+      case 'GBFS':
+        result = GBFS(grid, startNode, endNode);
+        break;
+      case 'Dijkstra':
+        result = Dijkstra(grid, startNode, endNode);
+        break;
+      case 'A*':
+        result = AStar(grid, startNode, endNode);
+        break;
+    }
+
+    if (result) {
+      lastAlgorithmResult.current = result;
+    }
+    return result;
+  }, [grid, findStartNode, findEndNode]);
 
   const handleAlgorithmSelect = (algorithm: string) => {
     setSelectedAlgorithm(algorithm);
+    announce(`Selected ${algorithm} algorithm`);
     console.log(`🔧 Selected algorithm: ${algorithm}`);
   };
 
   const handleSpeedSelect = (speed: AnimationSpeedType) => {
     setAnimationSpeed(speed);
-    const speedName = speed === AnimationSpeed.SLOW ? 'Slow' :
-      speed === AnimationSpeed.NORMAL ? 'Normal' :
-        speed === AnimationSpeed.FAST ? 'Fast' : 'Instant';
+    const speedName =
+      speed === AnimationSpeed.SLOW
+        ? 'Slow'
+        : speed === AnimationSpeed.NORMAL
+          ? 'Normal'
+          : speed === AnimationSpeed.FAST
+            ? 'Fast'
+            : 'Instant';
     console.log(`⚡ Selected speed: ${speedName}`);
   };
 
@@ -57,399 +188,225 @@ const AppContent: React.FC = () => {
     console.log(`🎨 Draw mode changed to: ${mode}`);
   };
 
-  const findStartNode = (): [number, number] => {
-    for (let row = 0; row < grid.length; row++) {
-      const currentRow = grid[row];
-      if (currentRow) {
-        for (let col = 0; col < currentRow.length; col++) {
-          const currentCell = currentRow[col];
-          if (currentCell && currentCell.isStart) {
-            return [row, col];
-          }
-        }
-      }
-    }
-    // Dynamic fallback: use grid center or safe position
-    const safeRow = Math.min(10, grid.length - 1);
-    const safeCol = Math.min(5, (grid[0]?.length || 1) - 1);
-    return [safeRow, safeCol];
-  };
-
-  const findEndNode = (): [number, number] => {
-    for (let row = 0; row < grid.length; row++) {
-      const currentRow = grid[row];
-      if (currentRow) {
-        for (let col = 0; col < currentRow.length; col++) {
-          const currentCell = currentRow[col];
-          if (currentCell && currentCell.isEnd) {
-            return [row, col];
-          }
-        }
-      }
-    }
-    // Dynamic fallback: use grid right side or safe position
-    const safeRow = Math.min(10, grid.length - 1);
-    const safeCol = Math.max(0, Math.min(45, (grid[0]?.length || 50) - 1));
-    return [safeRow, safeCol];
-  };
-
   const handleVisualizeClick = async () => {
-    if (selectedAlgorithm && !isAnimating) {
-      setIsAnimating(true);
-
-      // Update stats to show running state
-      setStats({
-        algorithmName: selectedAlgorithm,
-        nodesVisited: 0,
-        pathLength: 0,
-        executionTime: 0,
-        pathFound: false,
-        isRunning: true,
-      });
-
-      console.log(`🚀 Executing algorithm: ${selectedAlgorithm} at speed: ${animationSpeed === AnimationSpeed.INSTANT ? 'INSTANT' : `${animationSpeed}ms`}`);
-
-      const startTime = performance.now();
-      const startNode = findStartNode();
-      const endNode = findEndNode();
-
-      console.log('🎯 Algorithm execution setup:', {
-        algorithm: selectedAlgorithm,
-        startNode,
-        endNode,
-        startCell: grid[startNode[0]]?.[startNode[1]],
-        endCell: grid[endNode[0]]?.[endNode[1]],
-        gridSize: `${grid.length}x${grid[0]?.length || 0}`,
-        startEqualsEnd: startNode[0] === endNode[0] && startNode[1] === endNode[1]
-      });
-
-      // Validate that start and end positions are within bounds and not walls
-      const startCell = grid[startNode[0]]?.[startNode[1]];
-      const endCell = grid[endNode[0]]?.[endNode[1]];
-
-      if (!startCell || !endCell) {
-        console.error('❌ Invalid start or end position - outside grid bounds');
-        setIsAnimating(false);
-        return;
-      }
-
-      if (startCell.isWall || endCell.isWall) {
-        console.warn('⚠️ Start or end position is on a wall');
-        // Clear walls from start/end positions
-        if (startCell.isWall) {
-          updateCellState(startNode[0], startNode[1], { isWall: false });
-        }
-        if (endCell.isWall) {
-          updateCellState(endNode[0], endNode[1], { isWall: false });
-        }
-      }
-
-      let algorithmResult: any = null;
-
-      try {
-        // Clear any previous animations first
-        resetGridAnimations(grid, updateCellState);
-
-        switch (selectedAlgorithm) {
-          case 'BFS':
-            algorithmResult = BFS(grid, startNode, endNode);
-            break;
-          case 'DFS':
-            algorithmResult = DFS(grid, startNode, endNode);
-            break;
-          case 'GBFS':
-            algorithmResult = GBFS(grid, startNode, endNode);
-            break;
-          case 'Dijkstra':
-            algorithmResult = Dijkstra(grid, startNode, endNode);
-            break;
-          case 'A*':
-            algorithmResult = AStar(grid, startNode, endNode);
-            break;
-          default:
-            console.error('Algorithm not implemented.');
-            setIsAnimating(false);
-            return;
-        }
-
-        if (algorithmResult && algorithmResult.visited) {
-          const executionTime = performance.now() - startTime;
-          const pathFound = algorithmResult.pathArray !== null;
-          const pathLength = pathFound ? algorithmResult.pathArray.length : 0;
-
-          console.log('📊 Algorithm result:', {
-            visitedCount: algorithmResult.visited.length,
-            pathCount: pathLength,
-            pathFound,
-            executionTime: `${executionTime.toFixed(2)}ms`
-          });
-
-          // Animate the algorithm execution
-          await animateAlgorithm(
-            algorithmResult.visited,
-            algorithmResult.pathArray || [], // Use empty array if no path found
-            updateCellState,
-            animationSpeed
-          );
-
-          // Update statistics with final results
-          setStats({
-            algorithmName: selectedAlgorithm,
-            nodesVisited: algorithmResult.visited.length,
-            pathLength,
-            executionTime,
-            pathFound,
-            isRunning: false,
-          });
-
-          // Log result status
-          if (algorithmResult.pathArray === null) {
-            console.info('🚫 No path found - target may be unreachable');
-          } else if (algorithmResult.pathArray.length === 0) {
-            console.info('🎯 Already at target - no movement needed');
-          } else {
-            console.info('✅ Path found successfully');
-          }
-        } else {
-          console.warn('⚠️ Algorithm result missing data:', {
-            hasResult: !!algorithmResult,
-            hasVisited: !!(algorithmResult && algorithmResult.visited),
-            hasPath: !!(algorithmResult && algorithmResult.pathArray)
-          });
-
-          // Update stats to show failure
-          setStats({
-            algorithmName: selectedAlgorithm,
-            nodesVisited: 0,
-            pathLength: 0,
-            executionTime: performance.now() - startTime,
-            pathFound: false,
-            isRunning: false,
-          });
-        }
-      } catch (error) {
-        console.error('Error executing algorithm:', error);
-        setStats({
-          algorithmName: selectedAlgorithm,
-          nodesVisited: 0,
-          pathLength: 0,
-          executionTime: performance.now() - startTime,
-          pathFound: false,
-          isRunning: false,
-        });
-      } finally {
-        setIsAnimating(false);
-      }
-    } else if (isAnimating) {
-      console.warn('Animation already in progress.');
-    } else {
-      console.warn('No algorithm selected.');
+    if (selectedAlgorithm) {
+      announce(`Starting ${selectedAlgorithm} algorithm`, 'assertive');
+      executeAndStoreAlgorithm(selectedAlgorithm);
+      await executeAlgorithm(selectedAlgorithm);
+      announce(`${selectedAlgorithm} algorithm completed`, 'assertive');
     }
   };
 
   const handleResetBoard = () => {
-    if (!isAnimating) {
+    if (!isAnimating && !isGenerating && !isStepping) {
       resetBoard(grid, updateCellState);
-      // Reset statistics
-      setStats({
-        algorithmName: null,
-        nodesVisited: 0,
-        pathLength: 0,
-        executionTime: 0,
-        pathFound: false,
-        isRunning: false,
-      });
+      resetStats();
+      clearHistory();
+      resetStepMode();
+      lastAlgorithmResult.current = null;
+      announce('Board has been reset');
       console.log('🔄 Board reset - all walls, visited nodes, and paths cleared');
     }
   };
 
   const handleMazeGeneration = async (mazeType: string) => {
-    if (isAnimating) {
-      console.warn('Cannot generate maze while animation is running');
-      return;
-    }
+    announce(`Generating ${mazeType} maze`, 'assertive');
+    clearHistory();
+    await generateMaze(mazeType);
+    announce(`${mazeType} maze generated`, 'assertive');
+  };
 
-    setIsAnimating(true);
-    console.log(`🧱 Generating ${mazeType} maze`);
-
-    try {
-      // First clear existing walls
-      resetGridAnimations(grid, updateCellState);
-
-      // Wait a bit for the grid to clear
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const mazeGenerator = new MazeGenerator(grid);
-      let mazeResult;
-
-      switch (mazeType) {
-        case 'recursive-division':
-          mazeResult = mazeGenerator.recursiveDivision();
-          break;
-        case 'random':
-          mazeResult = mazeGenerator.randomMaze(0.35);
-          break;
-        case 'spiral':
-          mazeResult = mazeGenerator.spiralPattern();
-          break;
-        case 'vertical-skew':
-          mazeResult = mazeGenerator.verticalSkew();
-          break;
-        case 'horizontal-skew':
-          mazeResult = mazeGenerator.horizontalSkew();
-          break;
-        case 'clear':
-          mazeResult = mazeGenerator.clearWalls();
-          break;
-        default:
-          console.warn('Unknown maze type:', mazeType);
-          return;
+  // Handle step mode initialization
+  const handleInitializeStepMode = () => {
+    if (selectedAlgorithm) {
+      const success = initializeStepMode(selectedAlgorithm);
+      if (success) {
+        announce(`Step mode initialized for ${selectedAlgorithm}`, 'assertive');
       }
-
-      // Animate the maze generation
-      const speed = animationSpeed === AnimationSpeed.SLOW ? 50 :
-        animationSpeed === AnimationSpeed.NORMAL ? 20 :
-          animationSpeed === AnimationSpeed.FAST ? 5 : 0;
-
-      if (mazeType === 'clear') {
-        // For clearing, we don't need animation
-        resetGridAnimations(grid, updateCellState);
-      } else {
-        await animateMazeGeneration(mazeResult.animationOrder, updateCellState, speed);
-      }
-
-      console.log(`✅ ${mazeType} maze generation complete`);
-    } catch (error) {
-      console.error('Error generating maze:', error);
-    } finally {
-      setIsAnimating(false);
     }
   };
 
+  // Handle export visualization
+  const handleExportVisualization = async () => {
+    if (!selectedAlgorithm) {
+      announce('Please select an algorithm first', 'assertive');
+      return;
+    }
+
+    let result = lastAlgorithmResult.current;
+    if (!result) {
+      result = executeAndStoreAlgorithm(selectedAlgorithm);
+    }
+
+    if (result) {
+      announce('Recording visualization...', 'assertive');
+      const success = await exportVisualization(result, selectedAlgorithm);
+      if (success) {
+        announce('Visualization exported successfully', 'assertive');
+      }
+    }
+  };
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (!isAnimating && !isGenerating && !isStepping) {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (!isAnimating && !isGenerating && !isStepping) {
+          redo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAnimating, isGenerating, isStepping, undo, redo]);
+
   // Initialize on component mount
   useEffect(() => {
-    // Only run once when component mounts
     const hasRunTest = sessionStorage.getItem('algorithmsTestedOnce');
     if (!hasRunTest && grid.length > 0) {
       console.log('🔧 Search Algorithm Visualizer loaded');
       console.log('📏 Grid size:', grid.length, 'x', grid[0]?.length);
       sessionStorage.setItem('algorithmsTestedOnce', 'true');
     }
-  }, [grid]); // Include grid dependency to get accurate size
+  }, [grid]);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Search Algorithm Visualizer</h1>
-        <div className="controls">
-          <button
-            className="btn select-algorithm-btn"
-            onClick={handleVisualizeClick}
-            disabled={isAnimating}
-          >
-            {isAnimating
-              ? 'Visualizing...'
-              : selectedAlgorithm
-                ? `Visualize ${selectedAlgorithm}`
-                : 'Select an algorithm!'
-            }
-          </button>
-          <button
-            className="btn reset-board-btn"
-            onClick={handleResetBoard}
-            disabled={isAnimating}
-          >
-            Reset Board
-          </button>
-          <div className="dropdown">
-            <button className="btn dropdown-btn" aria-label="Select maze pattern">Mazes & Patterns</button>
-            <div className="dropdown-content" role="menu">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('recursive-division')}
-                disabled={isAnimating}
-              >
-                Recursive Division
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('random')}
-                disabled={isAnimating}
-              >
-                Random Maze
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('spiral')}
-                disabled={isAnimating}
-              >
-                Spiral Pattern
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('vertical-skew')}
-                disabled={isAnimating}
-              >
-                Vertical Skew
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('horizontal-skew')}
-                disabled={isAnimating}
-              >
-                Horizontal Skew
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => handleMazeGeneration('clear')}
-                disabled={isAnimating}
-              >
-                Clear Walls
-              </button>
-            </div>
-          </div>
-          <div className="dropdown">
-            <button className="btn dropdown-btn" aria-label="Select algorithm">Algorithms</button>
-            <div className="dropdown-content" role="menu">
-              <button type="button" role="menuitem" onClick={() => handleAlgorithmSelect('BFS')}>Breadth First Search</button>
-              <button type="button" role="menuitem" onClick={() => handleAlgorithmSelect('DFS')}>Depth First Search</button>
-              <button type="button" role="menuitem" onClick={() => handleAlgorithmSelect('GBFS')}>Greedy Best First Search</button>
-              <button type="button" role="menuitem" onClick={() => handleAlgorithmSelect('Dijkstra')}>Dijkstra's Algorithm</button>
-              <button type="button" role="menuitem" onClick={() => handleAlgorithmSelect('A*')}>A* Search</button>
-            </div>
-          </div>
+    <>
+      <GlobalScreenReaderAnnouncer />
+      <div className="
+      min-h-screen text-center overflow-x-hidden relative
+      bg-linear-to-br from-blockchain-dark via-[#001f3f] to-[#003d5c]
+      before:content-[''] before:fixed before:inset-0
+      before:bg-[radial-gradient(2px_2px_at_20%_30%,#00fff5,transparent),radial-gradient(2px_2px_at_60%_70%,#00d4ff,transparent),radial-gradient(1px_1px_at_50%_50%,#9d4edd,transparent),radial-gradient(1px_1px_at_80%_10%,#00fff5,transparent),radial-gradient(2px_2px_at_90%_60%,#00d4ff,transparent),radial-gradient(1px_1px_at_33%_80%,#00fff5,transparent)]
+      before:bg-size-[200%_200%] before:bg-position-[0%_0%]
+      before:animate-[particleFloat_20s_ease-in-out_infinite]
+      before:opacity-30 before:z-0 before:pointer-events-none
+    ">
+        <header className="
+        relative z-10
+        bg-linear-to-b from-blockchain-medium/95 to-blockchain-dark/90
+        backdrop-blur-[10px] px-2.5 py-5 text-blockchain-accent
+        flex flex-col items-center
+        border-b-2 border-primary-500
+        shadow-[0_4px_30px_rgba(0,212,255,0.3),0_8px_60px_rgba(0,153,204,0.2)]
+        after:content-[''] after:absolute after:inset-0
+        after:bg-[linear-gradient(90deg,transparent,rgba(0,212,255,0.1),transparent)]
+        after:animate-[holoScan_3s_linear_infinite] after:pointer-events-none
+      ">
+          <h1 className="
+        text-4xl md:text-[2.2rem] m-0 font-bold tracking-[1px] md:tracking-[2px] relative z-1
+        bg-linear-to-br from-blockchain-accent via-primary-500 to-purple-500
+        bg-size-[200%_200%] bg-clip-text text-transparent
+          animate-[gradientShift_4s_ease_infinite]
+          [text-shadow:0_0_30px_rgba(0,255,245,0.5),0_0_60px_rgba(0,212,255,0.6)]
+        ">
+            Search Algorithm Visualizer
+          </h1>
+          <FeatureErrorBoundary featureName="Toolbar">
+            <Toolbar
+              selectedAlgorithm={selectedAlgorithm}
+              isAnimating={isAnimating || isGenerating}
+              onVisualize={handleVisualizeClick}
+              onReset={handleResetBoard}
+              onAlgorithmSelect={handleAlgorithmSelect}
+              onSpeedSelect={handleSpeedSelect}
+              onMazeSelect={handleMazeGeneration}
+              // Undo/Redo
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={undo}
+              onRedo={redo}
+              // Save/Load
+              savedGrids={savedGrids}
+              onSaveGrid={saveGrid}
+              onLoadGrid={loadGrid}
+              onDeleteGrid={deleteGrid}
+              onExportGrid={exportGrid}
+              onImportGrid={importGrid}
+              // Step Controls
+              isStepping={isStepping}
+              isPaused={isPaused}
+              stepState={stepState}
+              onInitializeStep={handleInitializeStepMode}
+              onStepForward={stepForward}
+              onStepBackward={stepBackward}
+              onPlayStep={playStep}
+              onPauseStep={pauseStep}
+              onResetStep={resetStepMode}
+              onJumpToStep={jumpToStep}
+              // Comparison Mode
+              onComparisonMode={activateComparisonMode}
+              // Export
+              isRecording={isRecording}
+              recordingProgress={recordingProgress}
+              onExportVisualization={handleExportVisualization}
+              onExportImage={() => exportGridImage('grid-snapshot')}
+            />
+          </FeatureErrorBoundary>
+        </header>
 
-          <div className="dropdown">
-            <button className="btn dropdown-btn" aria-label="Select animation speed">Speed</button>
-            <div className="dropdown-content" role="menu">
-              <button type="button" role="menuitem" onClick={() => handleSpeedSelect(AnimationSpeed.SLOW)}>Slow</button>
-              <button type="button" role="menuitem" onClick={() => handleSpeedSelect(AnimationSpeed.NORMAL)}>Normal</button>
-              <button type="button" role="menuitem" onClick={() => handleSpeedSelect(AnimationSpeed.FAST)}>Fast</button>
-              <button type="button" role="menuitem" onClick={() => handleSpeedSelect(AnimationSpeed.INSTANT)}>Instant</button>
-            </div>
+        <FeatureErrorBoundary featureName="Statistics & Legend">
+          <div className="
+          flex justify-center items-start gap-5 p-5 flex-wrap relative z-5
+          bg-linear-to-b from-blockchain-dark/60 to-blockchain-medium/80
+          backdrop-blur-[10px]
+          border-b border-primary-500/30
+          shadow-[0_4px_20px_rgba(0,212,255,0.15)]
+          max-md:flex-col max-md:items-center max-md:p-3.75
+        ">
+            <Suspense fallback={<Loading message="Loading Legend..." size="small" />}>
+              <InteractiveLegend
+                currentDrawMode={currentDrawMode}
+                onDrawModeChange={handleDrawModeChange}
+              />
+            </Suspense>
+            <Suspense fallback={<Loading message="Loading Statistics..." size="small" />}>
+              <AlgorithmStats stats={stats} />
+            </Suspense>
           </div>
-        </div>
-      </header>
+        </FeatureErrorBoundary>
 
-      {/* Interactive Legend and Stats Section */}
-      <div className="legend-section">
-        <InteractiveLegend
-          currentDrawMode={currentDrawMode}
-          onDrawModeChange={handleDrawModeChange}
-        />
-        <AlgorithmStats stats={stats} />
+        <main className="
+        flex justify-center items-center px-5 py-10 mt-5 relative z-1
+        before:content-[''] before:absolute before:bottom-0 before:left-1/2 before:-translate-x-1/2
+        before:w-[90%] before:h-2 before:rounded-[50%] before:blur-sm
+        before:bg-[linear-gradient(90deg,transparent,rgba(0,255,245,0.4)_20%,rgba(0,255,245,0.6)_50%,rgba(0,255,245,0.4)_80%,transparent)]
+        before:shadow-[0_0_40px_rgba(0,255,245,0.5),0_0_80px_rgba(0,212,255,0.3)]
+        before:animate-[platformPulse_3s_ease-in-out_infinite]
+      ">
+          <FeatureErrorBoundary featureName="Grid Visualization">
+            <Grid />
+          </FeatureErrorBoundary>
+        </main>
+
+        {/* Algorithm Comparison Modal */}
+        {comparisonState.isActive && (
+          <Suspense fallback={<Loading message="Loading Comparison Mode..." />}>
+            <AlgorithmComparison
+              grid={grid}
+              algorithms={comparisonState.algorithms}
+              results={comparisonState.results}
+              isComparing={isComparing}
+              onAlgorithmChange={setComparisonAlgorithms}
+              onCompare={startComparison}
+              onClose={deactivateComparisonMode}
+            />
+          </Suspense>
+        )}
       </div>
-
-      <main>
-        <Grid />
-      </main>
-    </div>
+    </>
   );
 };
 

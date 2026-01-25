@@ -1,13 +1,400 @@
+@import 'tailwindcss';
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Grid cell animation classes */
+.cell-visited {
+  animation: visitedAnimation 0.3s ease-out forwards;
+}
+
+.cell-path {
+  animation: pathAnimation 0.3s ease-out forwards;
+}
+
+.cell-wall {
+  animation: wallAnimation 0.2s ease-out forwards;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Pulse animation for slow pulse effect */
+.animate-pulse-slow {
+  animation: pulseSlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Custom animations for algorithm visualization */
+@keyframes visitedAnimation {
+  0% {
+    transform: scale(0.3);
+    background-color: rgba(77, 194, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.2);
+    background-color: rgba(77, 194, 255, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    background-color: rgba(77, 194, 255, 1);
+  }
+}
+
+@keyframes pathAnimation {
+  0% {
+    transform: scale(0.6);
+    background-color: rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    transform: scale(1.3);
+    background-color: rgba(0, 255, 136, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    background-color: rgba(0, 255, 136, 1);
+  }
+}
+
+@keyframes wallAnimation {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Step controls progress bar styling */
+input[type='range']::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    rgba(0, 255, 245, 0.5),
+    rgba(0, 212, 255, 0.3)
+  );
+  border-radius: 0.5rem;
+  height: 0.5rem;
+}
+
+input[type='range']::-moz-range-track {
+  background: linear-gradient(
+    to right,
+    rgba(0, 255, 245, 0.5),
+    rgba(0, 212, 255, 0.3)
+  );
+  border-radius: 0.5rem;
+  height: 0.5rem;
+}
+
+/* Toolbar button styles - Blockchain inspired */
+.btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0099cc, #00d4ff);
+  color: white;
+  border: 2px solid #00d4ff;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+  will-change: transform;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 245, 0.6);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.4);
+}
+
+.btn:disabled {
+  background: linear-gradient(135deg, #1a1f35, #0a0e27);
+  color: #4a5568;
+  border-color: #2d3748;
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  background: linear-gradient(135deg, #1a1f35, #0a0e27);
+  border-color: #2d3748;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Reset button specific styling */
+.reset-board-btn {
+  background: linear-gradient(135deg, #d63384, #c82373);
+  border-color: #d63384;
+  box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4);
+}
+
+.reset-board-btn:hover {
+  box-shadow: 0 6px 20px rgba(255, 0, 128, 0.5);
+}
+
+/* Visualize button animation when animating */
+.btn.animating {
+  animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 6px 25px rgba(0, 255, 245, 0.7);
+  }
+}
+
+/* Controls container */
+.controls {
+  position: relative;
+  z-index: 1;
+}
+
+/* Holographic Blockchain Dropdown Styles */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  /* Add padding to increase hover area */
+  padding-bottom: 8px;
+}
+
+.dropdown-btn {
+  background: linear-gradient(135deg, #0099cc, #00d4ff);
+  color: white;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #00d4ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+  will-change: transform;
+}
+
+.dropdown-btn:hover {
+  box-shadow: 0 6px 20px rgba(0, 255, 245, 0.6);
+  transform: translateY(-2px);
+}
+
+.dropdown-btn:active {
+  transform: translateY(0);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background: linear-gradient(
+    180deg,
+    rgba(21, 27, 61, 0.98) 0%,
+    rgba(10, 14, 39, 0.98) 100%
+  );
+  backdrop-filter: blur(8px);
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+  z-index: 1000;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.5);
+  margin-top: 0px;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease-out;
+  padding-top: 8px;
+  top: 100%;
+  will-change: opacity, transform;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+  color: #00fff5;
+  padding: 14px 20px;
+  text-decoration: none;
+  display: block;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, padding-left 0.15s ease;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.dropdown-content a:last-child,
+.dropdown-content button:last-child {
+  border-bottom: none;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+  background: rgba(0, 212, 255, 0.2);
+  color: #ffffff;
+  padding-left: 28px;
+  border-left: 3px solid #00fff5;
+}
+
+.dropdown-content button:focus {
+  background: rgba(0, 212, 255, 0.25);
+  outline: 2px solid #00d4ff;
+  outline-offset: -2px;
+  color: #ffffff;
+}
+
+.dropdown-content button:disabled {
+  color: #4a5568;
+  cursor: not-allowed;
+  opacity: 0.4;
+  background: transparent;
+}
+
+.dropdown-content button:disabled:hover {
+  background: transparent;
+  padding-left: 20px;
+  border-left: none;
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+  display: block;
+  /* Add a slight delay before appearing for smoother UX */
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+.dropdown:hover .dropdown-btn,
+.dropdown:focus-within .dropdown-btn {
+  box-shadow: 0 6px 20px rgba(0, 255, 245, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Keep dropdown visible when hovering over content */
+.dropdown-content:hover {
+  display: block;
+}
+
+/* Responsive adjustments for dropdowns */
+@media (max-width: 768px) {
+  .dropdown-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .dropdown-content {
+    min-width: 180px;
+  }
+
+  .dropdown-content a,
+  .dropdown-content button {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .dropdown-content a:hover,
+  .dropdown-content button:hover {
+    padding-left: 24px;
+  }
+}
+
+/* Dropdown transition animations */
+.dropdown-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.dropdown-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dropdown-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }

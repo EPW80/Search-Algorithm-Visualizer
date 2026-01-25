@@ -1,5 +1,5 @@
 import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
-import { CellState } from "../context/GridContext";
+import { CellState } from '../types';
 
 export class DFSAlgorithm extends BaseAlgorithm {
   execute(

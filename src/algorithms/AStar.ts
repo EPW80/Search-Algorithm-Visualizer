@@ -1,4 +1,4 @@
-import { CellState } from '../context/GridContext';
+import { CellState } from '../types';
 import PriorityQueue from '../helpers/PriorityQueue';
 import { AlgorithmResult, BaseAlgorithm } from './BaseAlgorithm';
 

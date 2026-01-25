@@ -37,10 +37,12 @@ export default class PriorityQueue<T> {
   private bubbleUp() {
     let idx = this.elements.length - 1;
     const element = this.elements[idx];
+    if (!element) return;
 
     while (idx > 0) {
       const parentIdx = Math.floor((idx - 1) / 2);
       const parent = this.elements[parentIdx];
+      if (!parent) break;
 
       if (element.priority >= parent.priority) break;
 
@@ -54,6 +56,7 @@ export default class PriorityQueue<T> {
     let idx = 0;
     const length = this.elements.length;
     const element = this.elements[0];
+    if (!element) return;
 
     while (true) {
       const leftChildIdx = 2 * idx + 1;
@@ -62,23 +65,27 @@ export default class PriorityQueue<T> {
 
       if (leftChildIdx < length) {
         const leftChild = this.elements[leftChildIdx];
-        if (leftChild.priority < element.priority) {
+        if (leftChild && leftChild.priority < element.priority) {
           swap = leftChildIdx;
         }
       }
 
       if (rightChildIdx < length) {
         const rightChild = this.elements[rightChildIdx];
+        const swapElement = swap !== null ? this.elements[swap] : undefined;
         if (
-          (swap === null && rightChild.priority < element.priority) ||
-          (swap !== null && rightChild.priority < this.elements[swap].priority)
+          rightChild &&
+          ((swap === null && rightChild.priority < element.priority) ||
+          (swap !== null && swapElement && rightChild.priority < swapElement.priority))
         ) {
           swap = rightChildIdx;
         }
       }
 
       if (swap === null) break;
-      this.elements[idx] = this.elements[swap];
+      const swapElement = this.elements[swap];
+      if (!swapElement) break;
+      this.elements[idx] = swapElement;
       this.elements[swap] = element;
       idx = swap;
     }

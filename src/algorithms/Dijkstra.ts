@@ -1,6 +1,6 @@
 import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
 import PriorityQueue from "../helpers/PriorityQueue";
-import { CellState } from "../context/GridContext";
+import { CellState } from '../types';
 
 export class DijkstraAlgorithm extends BaseAlgorithm {
   execute(
@@ -76,9 +76,9 @@ export class DijkstraAlgorithm extends BaseAlgorithm {
 
         // Calculate new distance
         const edgeWeight = this.getCellWeight(neighborCell);
-        const currentDistance = distance.get(currentKey) || Infinity;
+        const currentDistance = distance.get(currentKey) ?? Infinity;
         const potentialDistance = currentDistance + edgeWeight;
-        const neighborDistance = distance.get(neighborKey) || Infinity;
+        const neighborDistance = distance.get(neighborKey) ?? Infinity;
 
         if (potentialDistance < neighborDistance) {
           distance.set(neighborKey, potentialDistance);

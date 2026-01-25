@@ -1,4 +1,4 @@
-import { CellState } from '../context/GridContext';
+import { CellState } from '../types';
 
 export interface MazeGeneratorResult {
   walls: [number, number][];
@@ -9,32 +9,11 @@ export class MazeGenerator {
   private grid: CellState[][];
   private rows: number;
   private cols: number;
-  private start: [number, number];
-  private end: [number, number];
 
   constructor(grid: CellState[][]) {
     this.grid = grid;
     this.rows = grid.length;
     this.cols = grid[0]?.length || 0;
-
-    // Find start and end positions
-    this.start = this.findNode('start');
-    this.end = this.findNode('end');
-  }
-
-  private findNode(type: 'start' | 'end'): [number, number] {
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        const cell = this.grid[row]?.[col];
-        if (
-          cell &&
-          ((type === 'start' && cell.isStart) || (type === 'end' && cell.isEnd))
-        ) {
-          return [row, col];
-        }
-      }
-    }
-    return [0, 0];
   }
 
   /**

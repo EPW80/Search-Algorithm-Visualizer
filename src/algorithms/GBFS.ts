@@ -1,6 +1,6 @@
 import { BaseAlgorithm, AlgorithmResult } from "./BaseAlgorithm";
 import PriorityQueue from "../helpers/PriorityQueue";
-import { CellState } from "../context/GridContext";
+import { CellState } from '../types';
 
 export class GBFSAlgorithm extends BaseAlgorithm {
   execute(

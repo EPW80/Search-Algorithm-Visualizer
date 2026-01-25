@@ -1,4 +1,4 @@
-import { CellState } from '../context/GridContext';
+import { CellState } from '../types';
 import { searchHelpers } from '../helpers/searchHelpers';
 
 export interface AlgorithmResult {

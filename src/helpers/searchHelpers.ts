@@ -1,4 +1,4 @@
-import { CellState } from "../context/GridContext";
+import { CellState } from '../types';
 
 export const searchHelpers = {
   manhattanDistance: (
@@ -10,7 +10,7 @@ export const searchHelpers = {
 
   getNeighbours: (
     node: [number, number],
-    grid: CellState[][],
+    _grid: CellState[][],
     rows: number,
     cols: number
   ): [number, number][] => {
@@ -55,10 +55,14 @@ export const searchHelpers = {
     const newGrid = grid.map((row) => row.map((cell) => ({ ...cell })));
 
     for (const [x, y] of nodes) {
-      if (isPath) {
-        newGrid[x][y].isPath = true;
-      } else {
-        newGrid[x][y].isVisited = true;
+      const row = newGrid[x];
+      const cell = row?.[y];
+      if (cell) {
+        if (isPath) {
+          cell.isPath = true;
+        } else {
+          cell.isVisited = true;
+        }
       }
     }
 
